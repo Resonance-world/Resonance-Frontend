@@ -1,0 +1,273 @@
+/* Design tokens extracted from Figma wireframes */
+:root {
+  /* Colors from Figma */
+  --innerview-dark-bg: #1a2520;
+  --innerview-dark-surface: #243329;
+  --innerview-card-bg: #2a3f32;
+  --innerview-text-primary: #ffffff;
+  --innerview-text-secondary: #a8b5a8;
+  --innerview-text-muted: #6b8071;
+  --innerview-accent-green: #4ade80;
+  --innerview-button-bg: rgba(74, 222, 128, 0.1);
+  --innerview-button-border: rgba(74, 222, 128, 0.3);
+  --innerview-button-hover: rgba(74, 222, 128, 0.2);
+  --innerview-success-green: #22c55e;
+  --innerview-border-subtle: rgba(255, 255, 255, 0.1);
+  
+  /* Typography from Figma */
+  --innerview-font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --innerview-font-size-xs: 0.75rem;
+  --innerview-font-size-sm: 0.875rem;
+  --innerview-font-size-base: 1rem;
+  --innerview-font-size-lg: 1.125rem;
+  --innerview-font-size-xl: 1.25rem;
+  --innerview-font-size-2xl: 1.5rem;
+  
+  /* Spacing from Figma */
+  --innerview-space-xs: 0.25rem;
+  --innerview-space-sm: 0.5rem;
+  --innerview-space-md: 1rem;
+  --innerview-space-lg: 1.5rem;
+  --innerview-space-xl: 2rem;
+  --innerview-space-2xl: 3rem;
+  
+  /* Border radius */
+  --innerview-radius-sm: 0.375rem;
+  --innerview-radius-md: 0.5rem;
+  --innerview-radius-lg: 0.75rem;
+  --innerview-radius-xl: 1rem;
+  
+  /* Shadows */
+  --innerview-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --innerview-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  
+  /* Chat specific tokens */
+  --innerview-chat-bubble-user: var(--innerview-button-bg);
+  --innerview-chat-bubble-bot: var(--innerview-dark-surface);
+  --innerview-chat-input-bg: rgba(255, 255, 255, 0.05);
+  --innerview-chat-input-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark theme variations */
+.innerview-dark {
+  background-color: var(--innerview-dark-bg);
+  color: var(--innerview-text-primary);
+}
+
+/* Card styles for home page */
+.innerview-card {
+  background-color: var(--innerview-card-bg);
+  border: 1px solid var(--innerview-border-subtle);
+  border-radius: var(--innerview-radius-lg);
+  padding: var(--innerview-space-lg);
+}
+
+.innerview-card-header {
+  font-size: var(--innerview-font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--innerview-space-md);
+  color: var(--innerview-text-primary);
+}
+
+.innerview-card-description {
+  font-size: var(--innerview-font-size-sm);
+  color: var(--innerview-text-secondary);
+  margin-bottom: var(--innerview-space-lg);
+}
+
+/* Prompt styles */
+.innerview-prompt-item {
+  background: var(--innerview-dark-surface);
+  border: 1px solid var(--innerview-border-subtle);
+  border-radius: var(--innerview-radius-md);
+  padding: var(--innerview-space-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: var(--innerview-space-sm);
+}
+
+.innerview-prompt-item:hover {
+  background: var(--innerview-button-bg);
+  border-color: var(--innerview-accent-green);
+}
+
+.innerview-prompt-item.selected {
+  background: var(--innerview-button-bg);
+  border-color: var(--innerview-accent-green);
+}
+
+/* Match circle styles */
+.innerview-match-circle {
+  width: 200px;
+  height: 200px;
+  border: 2px dashed var(--innerview-text-muted);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--innerview-space-lg);
+}
+
+.innerview-match-circle.matched {
+  border-color: var(--innerview-success-green);
+  border-style: solid;
+}
+
+/* Bottom navigation */
+.innerview-bottom-nav {
+  background: var(--innerview-dark-surface);
+  border-top: 1px solid var(--innerview-border-subtle);
+  padding: var(--innerview-space-md);
+  padding-bottom: calc(var(--innerview-space-md) + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  min-height: 80px;
+  z-index: 50;
+}
+
+/* Safe area utilities */
+.innerview-safe-bottom {
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+}
+
+.innerview-safe-bottom-large {
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+}
+
+/* Debug helper - shows safe area in development */
+@media (max-width: 768px) {
+  .innerview-safe-bottom-large::after {
+    content: "";
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: rgba(255, 0, 0, 0.1);
+    pointer-events: none;
+    z-index: 100;
+    border-top: 2px solid rgba(255, 0, 0, 0.3);
+  }
+}
+
+.innerview-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--innerview-space-xs);
+  color: var(--innerview-text-secondary);
+  text-decoration: none;
+  font-size: var(--innerview-font-size-xs);
+  transition: color 0.2s ease;
+}
+
+.innerview-nav-item.active {
+  color: var(--innerview-accent-green);
+}
+
+.innerview-nav-item:hover {
+  color: var(--innerview-text-primary);
+}
+
+/* Chat bubble styles */
+.innerview-chat-bubble {
+  padding: var(--innerview-space-md);
+  border-radius: var(--innerview-radius-md);
+  margin: var(--innerview-space-sm) 0;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.innerview-chat-bubble-bot {
+  background-color: var(--innerview-chat-bubble-bot);
+  color: var(--innerview-text-primary);
+  margin-right: auto;
+}
+
+.innerview-chat-bubble-user {
+  background-color: var(--innerview-chat-bubble-user);
+  color: var(--innerview-text-primary);
+  margin-left: auto;
+  border: 1px solid var(--innerview-button-border);
+}
+
+/* Button styles matching Figma */
+.innerview-button {
+  background: var(--innerview-button-bg);
+  border: 1px solid var(--innerview-button-border);
+  color: var(--innerview-text-primary);
+  padding: var(--innerview-space-sm) var(--innerview-space-md);
+  border-radius: var(--innerview-radius-sm);
+  font-size: var(--innerview-font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.innerview-button:hover {
+  background: var(--innerview-button-hover);
+  border-color: var(--innerview-accent-green);
+}
+
+.innerview-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.innerview-button-primary {
+  background: var(--innerview-success-green);
+  border-color: var(--innerview-success-green);
+  color: white;
+}
+
+.innerview-button-primary:hover {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+/* Input styles */
+.innerview-input {
+  background: var(--innerview-chat-input-bg);
+  border: 1px solid var(--innerview-chat-input-border);
+  color: var(--innerview-text-primary);
+  padding: var(--innerview-space-md);
+  border-radius: var(--innerview-radius-md);
+  font-size: var(--innerview-font-size-base);
+  width: 100%;
+}
+
+.innerview-input::placeholder {
+  color: var(--innerview-text-secondary);
+}
+
+.innerview-input:focus {
+  outline: none;
+  border-color: var(--innerview-accent-green);
+  box-shadow: 0 0 0 1px var(--innerview-accent-green);
+}
+
+/* Textarea styles */
+.innerview-textarea {
+  background: var(--innerview-chat-input-bg);
+  border: 1px solid var(--innerview-chat-input-border);
+  color: var(--innerview-text-primary);
+  padding: var(--innerview-space-md);
+  border-radius: var(--innerview-radius-md);
+  font-size: var(--innerview-font-size-base);
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.innerview-textarea::placeholder {
+  color: var(--innerview-text-secondary);
+}
+
+.innerview-textarea:focus {
+  outline: none;
+  border-color: var(--innerview-accent-green);
+  box-shadow: 0 0 0 1px var(--innerview-accent-green);
+} 

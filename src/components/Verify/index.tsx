@@ -21,29 +21,49 @@ export const Verify = () => {
   const onClickVerify = async (verificationLevel: VerificationLevel) => {
     setButtonState('pending');
     setWhichVerification(verificationLevel);
-    const result = await MiniKit.commandsAsync.verify({
-      action: 'verify', // Make sure to create this in the developer portal -> incognito actions
-      verification_level: verificationLevel,
-    });
-    console.log(result.finalPayload);
-    // Verify the proof
-    const response = await fetch('/api/verify-proof', {
-      method: 'POST',
-      body: JSON.stringify({
-        payload: result.finalPayload,
-        action: 'verify',
-      }),
-    });
+    
+    try {
+      const result = await MiniKit.commandsAsync.verify({
+        action: 'verify', // Make sure to create this in the developer portal -> incognito actions
+        verification_level: verificationLevel,
+      });
+      console.log('🔐 World ID verification result:', result.finalPayload);
+      
+      // Verify the proof on the server
+      const response = await fetch('/api/verify-proof', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          payload: result.finalPayload,
+          action: 'verify',
+        }),
+      });
 
-    const data = await response.json();
-    if (data.verifyRes.success) {
-      setButtonState('success');
-      // Normally you'd do something here since the user is verified
-      // Here we'll just do nothing
-    } else {
+      const data = await response.json();
+      console.log('📡 Server verification response:', data);
+
+      if (data.verifyRes.success) {
+        console.log('✅ User verified! Redirecting to onboarding...');
+        setButtonState('success');
+        
+        // Redirect to onboarding flow after successful verification
+        window.location.href = '/onboarding';
+      } else {
+        console.error('❌ Verification failed:', data.verifyRes);
+        setButtonState('failed');
+
+        // Reset the button state after 2 seconds
+        setTimeout(() => {
+          setButtonState(undefined);
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('💥 Verification error:', error);
       setButtonState('failed');
-
-      // Reset the button state after 3 seconds
+      
+      // Reset the button state after 2 seconds
       setTimeout(() => {
         setButtonState(undefined);
       }, 2000);
@@ -76,6 +96,7 @@ export const Verify = () => {
           Verify (Device)
         </Button>
       </LiveFeedback>
+      {/* TODO: Uncomment when orb verification is needed
       <LiveFeedback
         label={{
           failed: 'Failed to verify',
@@ -97,6 +118,7 @@ export const Verify = () => {
           Verify (Orb)
         </Button>
       </LiveFeedback>
+      */}
     </div>
   );
 };
