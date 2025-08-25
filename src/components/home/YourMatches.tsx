@@ -17,7 +17,13 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
 
   const handleAcceptMatch = (matchId: string) => {
     console.log('✅ Accepting match:', matchId);
-    // TODO: Handle match acceptance
+    // Navigate to conversation when accepting match
+    const match = matches.find(m => m.id === matchId);
+    if (match?.user && match.user !== 'InnerView') {
+      // Create conversation ID and navigate
+      const conversationId = `conv-${matchId}`;
+      window.location.href = `/conversation/${conversationId}`;
+    }
   };
 
   const handleDeclineMatch = (matchId: string) => {
@@ -109,19 +115,22 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
       
       {/* Add profile information prompt */}
       <div className="mt-4 pt-4 border-t border-gray-700">
-        <div className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg cursor-pointer hover:bg-gray-800/70 transition-colors">
+        <button 
+          onClick={() => window.location.href = '/garden'}
+          className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg cursor-pointer hover:bg-gray-800/70 transition-colors w-full"
+        >
           <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300">
               <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
             </svg>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 text-left">
             <p className="text-sm font-medium text-white">Add more information to your profile and get a more personalized match</p>
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
             <path d="M9 18l6-6-6-6"/>
           </svg>
-        </div>
+        </button>
       </div>
     </div>
   );

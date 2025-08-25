@@ -43,27 +43,22 @@ export const ThemeSelection = () => {
 
       {/* Content */}
       <div className="p-4 innerview-safe-bottom-large">
-        <div className="mb-8">
+        <div className="mb-8 text-center">
           <h1 className="text-white text-xl font-medium mb-2">
             What&apos;s the theme of your prompt?
           </h1>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-1">
           {PROMPT_THEMES.map((theme) => (
             <button
               key={theme.id}
               onClick={() => handleThemeSelect(theme.id)}
-              className="innerview-prompt-item w-full text-left hover:bg-green-900/20 hover:border-green-500/30"
+              className="w-full text-left p-4 text-white hover:bg-white/5 transition-colors border-b border-gray-700 last:border-b-0"
             >
-              <div className="text-sm font-medium text-white">
+              <div className="text-sm font-medium">
                 {theme.name}
               </div>
-              {theme.description && (
-                <div className="text-xs text-gray-400 mt-1">
-                  {theme.description}
-                </div>
-              )}
             </button>
           ))}
         </div>

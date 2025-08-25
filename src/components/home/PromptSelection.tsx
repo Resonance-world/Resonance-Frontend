@@ -97,16 +97,18 @@ export const PromptSelection = () => {
         </div>
 
         {/* Predefined prompts */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-1 mb-6">
           {prompts.map((prompt) => (
             <button
               key={prompt.id}
               onClick={() => handlePromptSelect(prompt)}
-              className={`innerview-prompt-item w-full text-left ${
-                selectedPrompt?.id === prompt.id ? 'selected' : ''
+              className={`w-full text-left p-4 transition-colors border-b border-gray-700 last:border-b-0 ${
+                selectedPrompt?.id === prompt.id 
+                  ? 'bg-green-900/20 text-green-400' 
+                  : 'text-white hover:bg-white/5'
               }`}
             >
-              <div className="text-sm text-white">
+              <div className="text-sm">
                 {prompt.question}
               </div>
             </button>
