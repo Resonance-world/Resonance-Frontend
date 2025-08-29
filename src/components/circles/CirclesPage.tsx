@@ -68,7 +68,7 @@ export const CirclesPage = () => {
     console.log('🎯 Moving profile', profileId, 'to circle', targetCircleId);
 
     setCircles(prevCircles => {
-             let profileToMove: CircleProfile | null = null;
+      let profileToMove: CircleProfile | null = null;
       
       // Remove profile from source circle
       const updatedCircles = prevCircles.map(circle => ({
@@ -86,7 +86,7 @@ export const CirclesPage = () => {
       if (profileToMove) {
         const finalCircles = updatedCircles.map(circle => 
           circle.id === targetCircleId 
-            ? { ...circle, profiles: [...circle.profiles, profileToMove] }
+            ? { ...circle, profiles: [...circle.profiles, profileToMove as CircleProfile] }
             : circle
         );
         
@@ -217,7 +217,7 @@ export const CirclesPage = () => {
         </DragOverlay>
       </DndContext>
 
-      <BottomNavigation />
+      <BottomNavigation currentPage="circles" />
     </div>
   );
 }; 

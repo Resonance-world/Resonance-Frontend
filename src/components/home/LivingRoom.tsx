@@ -8,9 +8,9 @@ import { Prompt, Match } from '@/types/home';
 
 interface Session {
   user: {
-    username?: string;
-    name?: string;
-    profilePictureUrl?: string;
+    username?: string | null;
+    name?: string | null;
+    profilePictureUrl?: string | null;
   };
 }
 

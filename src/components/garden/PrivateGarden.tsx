@@ -47,7 +47,6 @@ export const PrivateGarden = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.accessToken}`,
         },
         body: JSON.stringify({
           bio: profile.bio,
@@ -67,35 +66,8 @@ export const PrivateGarden = () => {
     }
   };
 
-  const handleSocialLinksUpdate = async (newSocialLinks: typeof profile.socialLinks) => {
-    console.log('🔗 Updating social links in database');
-    
-    setProfile(prev => ({
-      ...prev,
-      socialLinks: newSocialLinks
-    }));
-
-    try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.accessToken}`,
-        },
-        body: JSON.stringify({
-          socialLinks: newSocialLinks,
-        }),
-      });
-
-      if (response.ok) {
-        console.log('✅ Social links updated successfully');
-      } else {
-        console.error('❌ Failed to update social links:', response.statusText);
-      }
-    } catch (error) {
-      console.error('❌ Error updating social links:', error);
-    }
-  };
+  // Note: handleSocialLinksUpdate removed as it was unused
+  // If needed in the future, it can be re-added when SocialLinksEditor is integrated
 
   const handleProfileImageUpdate = async (newImageUrl: string) => {
     console.log('🖼️ Updating profile image in database');
@@ -110,7 +82,6 @@ export const PrivateGarden = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.accessToken}`,
         },
         body: JSON.stringify({
           profileImage: newImageUrl,

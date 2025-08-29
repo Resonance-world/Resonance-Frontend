@@ -57,14 +57,14 @@ export const ProfileCard = ({ profile, onClick, isDragging }: ProfileCardProps) 
       <div className="relative mb-3">
         <div className="w-16 h-16 mx-auto rounded-full overflow-hidden border border-white/20">
           <img 
-            src={profile.image} 
+            src={profile.profileImage} 
             alt={profile.name}
             className="w-full h-full object-cover"
           />
         </div>
         
         {/* Notification indicator */}
-        {profile.hasNewActivity && (
+        {profile.hasUnreadMessages && (
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#2081E2] rounded-full border border-black/20"></div>
         )}
       </div>
@@ -76,12 +76,12 @@ export const ProfileCard = ({ profile, onClick, isDragging }: ProfileCardProps) 
         </h3>
         
         <p className="text-white/60 text-xs leading-relaxed">
-          {profile.lastMessage}
+          Last active: {profile.lastActivity.toLocaleDateString()}
         </p>
         
-        {profile.lastActiveTime && (
+        {profile.lastActivity && (
           <p className="text-white/40 text-xs mt-1">
-            {profile.lastActiveTime}
+            {profile.lastActivity.toLocaleTimeString()}
           </p>
         )}
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface ChatMessage {
@@ -28,7 +28,7 @@ interface OnboardingData {
 export const ChatbotOnboarding = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
+  const [, setOnboardingData] = useState<OnboardingData>({});
   const [isTyping, setIsTyping] = useState(false);
   const [userInput, setUserInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -36,7 +36,7 @@ export const ChatbotOnboarding = () => {
 
   console.log('🤖 Chatbot Onboarding initialized');
 
-  const questions = [
+  const questions = useMemo(() => [
     {
       id: 'welcome',
       content: "Welcome. Before we start, take a breath. This isn't about building a profile — it's about letting yourself be seen in a way that feels true.",
@@ -82,7 +82,7 @@ export const ChatbotOnboarding = () => {
       dataKey: 'technology' as keyof OnboardingData,
       inputType: 'text'
     }
-  ];
+  ], []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -99,7 +99,7 @@ export const ChatbotOnboarding = () => {
         addBotMessage(questions[0].content);
       }, 500);
     }
-  }, []);
+  }, [messages.length, questions]);
 
   const addBotMessage = (content: string, options?: string[]) => {
     console.log('🤖 Bot message:', content);

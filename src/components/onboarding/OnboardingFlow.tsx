@@ -30,7 +30,7 @@ const STEPS = [
  */
 export const OnboardingFlow = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [onboardingData, setOnboardingData] = useState({});
+  const [onboardingData, setOnboardingData] = useState<Partial<Record<OnboardingStep, unknown>>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const currentStep = STEPS[currentStepIndex];
@@ -92,7 +92,7 @@ export const OnboardingFlow = () => {
   const renderCurrentStep = () => {
     const stepProps = {
       onDataChange: handleStepData,
-      data: onboardingData[currentStep] || {},
+      data: (onboardingData[currentStep] || {}) as Record<string, unknown>,
       isLoading
     };
 
