@@ -1,0 +1,4 @@
+package-manager=pnpm@6.35.1
+auto-install-peers=true
+shamefully-hoist=true
+prefer-frozen-lockfile=false 
