@@ -11,6 +11,7 @@ export default auth((req) => {
     '/onboarding/gift',
     '/onboarding/loading', 
     '/test',
+    '/guest',
     '/api/auth',
   ];
   

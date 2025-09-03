@@ -27,7 +27,7 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [hasMatchedToday] = useState(false);
 
-  console.log('🏠 Living Room initialized for user:', session.user.name || session.user.username);
+  console.log('🏠 Living Room initialized for user:', session?.user?.name || session?.user?.username || 'Guest');
 
   useEffect(() => {
     // TODO: Load user's current prompt and matches from backend
@@ -74,7 +74,7 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
     }
   };
 
-  const displayName = session.user.name || session.user.username || 'Friend';
+  const displayName = session?.user?.name || session?.user?.username || 'Friend';
 
   return (
     <div className="innerview-dark min-h-screen flex flex-col">

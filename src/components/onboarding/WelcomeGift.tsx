@@ -25,7 +25,8 @@ export const WelcomeGift = () => {
 
   const handleContinue = () => {
     console.log('🚀 Continuing to main app...');
-    router.push('/home');
+    // Redirect to guest page for demo experience
+    router.push('/guest');
   };
 
   return (
