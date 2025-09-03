@@ -10,8 +10,10 @@ export default auth((req) => {
     '/onboarding',
     '/onboarding/gift',
     '/onboarding/loading', 
-    '/test',
-    '/guest',
+    '/home',
+    '/circles',
+    '/garden',
+    '/conversation',
     '/api/auth',
   ];
   

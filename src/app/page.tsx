@@ -24,25 +24,16 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="flex flex-col gap-3">
-            <Link 
-              href="/onboarding"
-              className="w-full py-3 px-4 bg-white/10 hover:bg-white/20 text-white text-center rounded-lg border border-white/20 transition-colors"
-            >
-              Continue as Guest - Onboarding
-            </Link>
-            
-            <Link 
-              href="/test"
-              className="w-full py-3 px-4 bg-blue-500/20 hover:bg-blue-500/30 text-white text-center rounded-lg border border-blue-500/30 transition-colors"
-            >
-              Feature Validation Test
-            </Link>
-          </div>
+                     <Link
+             href="/onboarding"
+             className="w-full py-3 px-4 bg-white/10 hover:bg-white/20 text-white text-center rounded-lg border border-white/20 transition-colors"
+           >
+             Continue as Guest
+           </Link>
           
-          <p className="text-xs text-white/50 text-center">
-            Guest mode bypasses authentication for development and testing
-          </p>
+                     <p className="text-xs text-white/50 text-center">
+             Guest mode gives you full app access for development
+           </p>
         </div>
         
         {/* Debug info for development */}

@@ -8,9 +8,17 @@ import { LivingRoom } from '@/components/home/LivingRoom';
 export default async function HomePage() {
   const session = await auth();
 
-  if (!session) {
-    return <div>Please log in</div>;
-  }
+  // For guest mode (development), create a mock session
+  const guestSession = {
+    user: {
+      name: 'Guest User',
+      username: 'guest',
+      profilePictureUrl: null
+    }
+  };
 
-  return <LivingRoom session={session} />;
+  // Use real session if available, otherwise use guest session for development
+  const activeSession = session || guestSession;
+
+  return <LivingRoom session={activeSession} />;
 }
