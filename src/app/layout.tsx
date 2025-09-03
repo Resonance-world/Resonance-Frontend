@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import ClientProviders from '@/providers';
-import '@worldcoin/mini-apps-ui-kit-react/styles.css';
+import '@worldcoin/mini-apps-ui-kit-react/dist/globals.css';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
