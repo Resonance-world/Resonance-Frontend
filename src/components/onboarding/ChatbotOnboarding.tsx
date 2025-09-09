@@ -10,20 +10,22 @@ interface ChatMessage {
   timestamp: Date;
   options?: string[];
   isTyping?: boolean;
+  isMultiSelect?: boolean;
+  showContinueButton?: boolean;
 }
 
 interface OnboardingData {
-  essence?: string;
-  connecting?: string;
-  connection?: string;
-  motivation?: string;
-  curiosity?: string;
-  technology?: string;
+  connection_intentions?: string;
+  communication_tone?: string;
+  core_values?: string[];
+  life_philosophy?: string;
+  essence_summary?: string;
+  life_season?: string;
 }
 
 /**
- * ChatbotOnboarding - Conversational onboarding based on Figma design
- * Implements the dark theme chat interface with predefined questions
+ * ChatbotOnboarding - Human-centered conversational onboarding
+ * "Every encounter is an invitation to meet another layer of yourself."
  */
 export const ChatbotOnboarding = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -31,6 +33,8 @@ export const ChatbotOnboarding = () => {
   const [, setOnboardingData] = useState<OnboardingData>({});
   const [isTyping, setIsTyping] = useState(false);
   const [userInput, setUserInput] = useState('');
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [showCompletion, setShowCompletion] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -39,48 +43,90 @@ export const ChatbotOnboarding = () => {
   const questions = useMemo(() => [
     {
       id: 'welcome',
-      content: "Welcome. Before we start, take a breath. This isn't about building a profile — it's about letting yourself be seen in a way that feels true.",
-      followUp: "Let's get to know you...\nWe all have an 'essence' — qualities that feel the most you.",
-      question: "When you think about your best self, what one or two words come to mind?",
-      dataKey: 'essence' as keyof OnboardingData,
-      inputType: 'text'
-    },
-    {
-      id: 'connecting',
-      content: "Why those? What story or moment in your life makes you feel that essence strongly?",
-      dataKey: 'connecting' as keyof OnboardingData,
-      inputType: 'text'
-    },
-    {
-      id: 'connection',
-      content: "Beautiful. Now let's talk about how you connect.\nWhen you're in conversation with someone new, what helps you feel most alive?",
+      content: "Hey there. 🌱\n\nBefore we help you find people who truly get you, let's take a moment to understand who you are when you're most yourself.\n\nThink of this as a conversation with someone who's genuinely curious about your inner world. No performance needed—just your truth.",
+      question: "When you imagine connecting with someone who truly sees you, what are you hoping to find?",
       options: [
-        "Playful back and forth",
-        "Space for depth and reflection",
-        "Building something new together",
-        "Just seeing where it goes"
+        "Deep friendship that feels like coming home",
+        "Romantic love built on genuine understanding",
+        "Conversations that light up your mind", 
+        "Creative partnership in making something meaningful",
+        "Spiritual companionship on life's journey",
+        "Wisdom exchange with someone who's walked different paths",
+        "A chosen family of people who really get you"
       ],
-      dataKey: 'connection' as keyof OnboardingData,
+      dataKey: 'connection_intentions' as keyof OnboardingData,
       inputType: 'select'
     },
     {
-      id: 'motivation',
-      content: "And what pulls you here?\nWhat's motivating you to connect with others right now?",
-      dataKey: 'motivation' as keyof OnboardingData,
+      id: 'expression',
+      content: "When you're talking about something that matters to you, how do you naturally express yourself?",
+      options: [
+        "I think deeply, then choose my words carefully",
+        "I'm playful, spontaneous, and think out loud",
+        "I say exactly what I mean, no dancing around it",
+        "I speak in stories, images, and metaphors",
+        "I like to explore ideas logically and systematically",
+        "I create warm, safe space for vulnerable sharing"
+      ],
+      dataKey: 'communication_tone' as keyof OnboardingData,
+      inputType: 'select'
+    },
+    {
+      id: 'values',
+      content: "What values feel most essential to who you are? Pick the ones that, if you couldn't honor them, you wouldn't feel like yourself.\n\nChoose up to 4 that feel most true.",
+      options: [
+        "Authenticity - being genuinely me",
+        "Growth - constantly becoming",
+        "Creativity - bringing new things to life",
+        "Justice - standing up for what's right",
+        "Adventure - embracing the unknown",
+        "Peace - creating harmony and calm",
+        "Service - contributing something meaningful",
+        "Freedom - living on my own terms",
+        "Connection - building real bonds",
+        "Beauty - appreciating and creating what moves me"
+      ],
+      dataKey: 'core_values' as keyof OnboardingData,
+      inputType: 'multiselect',
+      maxSelections: 4
+    },
+    {
+      id: 'worldview',
+      content: "What feels most true about life and people to you?",
+      options: [
+        "Life is about growing into who we're meant to be",
+        "Everything comes down to love and connection",
+        "We're here to contribute something meaningful",
+        "Life is meant to be fully experienced and savored",
+        "We're all creators, here to make something beautiful",
+        "Wisdom comes through both struggle and joy",
+        "Freedom and choice are what make us human",
+        "Balance and harmony are where we thrive"
+      ],
+      dataKey: 'life_philosophy' as keyof OnboardingData,
+      inputType: 'select'
+    },
+    {
+      id: 'essence',
+      content: "Here's the real question: What's the deeper \"why\" that drives who you are?\n\nThink about what makes you come alive, or what you'd want someone to understand about you if they could see into your heart.\n\nExample: \"I believe everyone has a unique light, and I come alive helping people find theirs. Connection and authenticity can heal so much.\"\n\nYour turn—what's at the core of who you are? (Keep it to 2-3 sentences)",
+      dataKey: 'essence_summary' as keyof OnboardingData,
       inputType: 'text'
     },
     {
-      id: 'curiosity',
-      content: "One last question: what's something you've been curious about or exploring lately?",
-      dataKey: 'curiosity' as keyof OnboardingData,
-      inputType: 'text'
-    },
-    {
-      id: 'technology',
-      content: "Last one — what's something you've been curious about or exploring lately?",
-      followUp: "How technology can be used for deeper human connection, not just efficiency or profit.",
-      dataKey: 'technology' as keyof OnboardingData,
-      inputType: 'text'
+      id: 'life_season',
+      content: "What season of life are you in?",
+      options: [
+        "Exploring who I'm becoming",
+        "Building something meaningful",
+        "In transition and reimagining everything",
+        "Deepening what I already know about myself",
+        "Healing and growing from past experiences",
+        "Focused on contributing and giving back",
+        "Appreciating what I have",
+        "Asking big questions about everything"
+      ],
+      dataKey: 'life_season' as keyof OnboardingData,
+      inputType: 'select'
     }
   ], []);
 
@@ -97,11 +143,15 @@ export const ChatbotOnboarding = () => {
     if (messages.length === 0) {
       setTimeout(() => {
         addBotMessage(questions[0].content);
+        // Add the question after a pause
+        setTimeout(() => {
+          addBotMessage(questions[0].question!, questions[0].options);
+        }, 2000);
       }, 500);
     }
   }, [messages.length, questions]);
 
-  const addBotMessage = (content: string, options?: string[]) => {
+  const addBotMessage = (content: string, options?: string[], showContinue?: boolean) => {
     console.log('🤖 Bot message:', content);
     
     setIsTyping(true);
@@ -113,12 +163,13 @@ export const ChatbotOnboarding = () => {
         type: 'bot',
         content,
         timestamp: new Date(),
-        options
+        options,
+        showContinueButton: showContinue
       };
       
       setMessages(prev => [...prev, newMessage]);
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000); // Random delay between 1-2 seconds
+    }, 1000 + Math.random() * 1000);
   };
 
   const addUserMessage = (content: string) => {
@@ -135,8 +186,9 @@ export const ChatbotOnboarding = () => {
     setUserInput('');
   };
 
-  const handleUserResponse = (response: string, dataKey?: keyof OnboardingData) => {
-    addUserMessage(response);
+  const handleUserResponse = (response: string | string[], dataKey?: keyof OnboardingData) => {
+    const responseText = Array.isArray(response) ? response.join(', ') : response;
+    addUserMessage(responseText);
     
     // Save the response data
     if (dataKey) {
@@ -147,6 +199,9 @@ export const ChatbotOnboarding = () => {
       console.log('📊 Onboarding data updated:', { [dataKey]: response });
     }
     
+    // Reset selections for next question
+    setSelectedValues([]);
+    
     // Move to next question
     const nextIndex = currentQuestionIndex + 1;
     
@@ -156,34 +211,12 @@ export const ChatbotOnboarding = () => {
       
       setTimeout(() => {
         addBotMessage(nextQuestion.content, nextQuestion.options);
-        
-        // Add follow-up if exists
-        if (nextQuestion.followUp) {
-          setTimeout(() => {
-            addBotMessage(nextQuestion.followUp!);
-          }, 2000);
-        }
-        
-        // Add actual question if it's different from content
-        if (nextQuestion.question) {
-          setTimeout(() => {
-            addBotMessage(nextQuestion.question!);
-          }, nextQuestion.followUp ? 4000 : 2000);
-        }
       }, 2000);
     } else {
       // Onboarding complete
       setTimeout(() => {
-        addBotMessage("Thank you. That's it. You've shared more than just facts — you've shared a piece of yourself.");
-        
-        setTimeout(() => {
-          addBotMessage("Here's your InnerView token 🪙 — a small reminder of the space you just created.");
-          
-          setTimeout(() => {
-            console.log('🎉 Onboarding complete, redirecting to loading...');
-            router.push('/onboarding/loading');
-          }, 3000);
-        }, 2500);
+        addBotMessage("Beautiful.\n\nBased on what you've shared, I can see the depth of who you are. You've given us something real to work with—not just preferences, but your actual essence.", undefined, true);
+        setShowCompletion(true);
       }, 2000);
     }
   };
@@ -197,8 +230,38 @@ export const ChatbotOnboarding = () => {
 
   const handleOptionSelect = (option: string) => {
     const currentQuestion = questions[currentQuestionIndex];
-    handleUserResponse(option, currentQuestion.dataKey);
+    
+    if (currentQuestion.inputType === 'multiselect') {
+      const maxSelections = currentQuestion.maxSelections || 4;
+      let newSelected = [...selectedValues];
+      
+      if (newSelected.includes(option)) {
+        newSelected = newSelected.filter(v => v !== option);
+      } else if (newSelected.length < maxSelections) {
+        newSelected.push(option);
+      }
+      
+      setSelectedValues(newSelected);
+    } else {
+      handleUserResponse(option, currentQuestion.dataKey);
+    }
   };
+
+  const handleMultiSelectConfirm = () => {
+    if (selectedValues.length > 0) {
+      const currentQuestion = questions[currentQuestionIndex];
+      handleUserResponse(selectedValues, currentQuestion.dataKey);
+    }
+  };
+
+  const handleContinue = () => {
+    console.log('🎉 Onboarding complete, redirecting to loading...');
+    router.push('/onboarding/loading');
+  };
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const isMultiSelect = currentQuestion?.inputType === 'multiselect';
+  const showInput = currentQuestion?.inputType === 'text';
 
   return (
     <div className="innerview-dark min-h-screen flex flex-col">
@@ -236,11 +299,36 @@ export const ChatbotOnboarding = () => {
                     <button
                       key={index}
                       onClick={() => handleOptionSelect(option)}
-                      className="innerview-button block w-full text-left"
+                      className={`innerview-button block w-full text-left ${
+                        isMultiSelect && selectedValues.includes(option) 
+                          ? 'bg-blue-600 border-blue-500' 
+                          : ''
+                      }`}
                     >
                       {option}
                     </button>
                   ))}
+                  
+                  {isMultiSelect && (
+                    <button
+                      onClick={handleMultiSelectConfirm}
+                      disabled={selectedValues.length === 0}
+                      className="innerview-button w-full mt-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Continue with {selectedValues.length} selected
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {message.showContinueButton && (
+                <div className="mt-4">
+                  <button
+                    onClick={handleContinue}
+                    className="innerview-button w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"
+                  >
+                    Let's find your people 🌱
+                  </button>
                 </div>
               )}
             </div>
@@ -262,29 +350,31 @@ export const ChatbotOnboarding = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
-      <div className="p-4 border-t border-white/10">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleTextSubmit()}
-            placeholder="Type your message"
-            className="innerview-input flex-1"
-            disabled={isTyping}
-          />
-          <button
-            onClick={handleTextSubmit}
-            disabled={!userInput.trim() || isTyping}
-            className="innerview-button px-4"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-            </svg>
-          </button>
+      {/* Input area - only show for text questions */}
+      {showInput && !showCompletion && (
+        <div className="p-4 border-t border-white/10">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleTextSubmit()}
+              placeholder="Share what's at the core of who you are..."
+              className="innerview-input flex-1"
+              disabled={isTyping}
+            />
+            <button
+              onClick={handleTextSubmit}
+              disabled={!userInput.trim() || isTyping}
+              className="innerview-button px-4"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }; 
