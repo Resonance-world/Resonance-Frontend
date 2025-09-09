@@ -43,7 +43,7 @@ export const ChatbotOnboarding = () => {
   const questions = useMemo(() => [
     {
       id: 'welcome',
-      content: "Hey there. 🌱\n\nBefore we help you find people who truly get you, let's take a moment to understand who you are when you're most yourself.\n\nThink of this as a conversation with someone who's genuinely curious about your inner world. No performance needed—just your truth.",
+      content: "Hey there. 🌱\n\nBefore we help you find people who truly get you, let&apos;s take a moment to understand who you are when you&apos;re most yourself.\n\nThink of this as a conversation with someone who&apos;s genuinely curious about your inner world. No performance needed—just your truth.",
       question: "When you imagine connecting with someone who truly sees you, what are you hoping to find?",
       options: [
         "Deep friendship that feels like coming home",
@@ -59,10 +59,10 @@ export const ChatbotOnboarding = () => {
     },
     {
       id: 'expression',
-      content: "When you're talking about something that matters to you, how do you naturally express yourself?",
+      content: "When you&apos;re talking about something that matters to you, how do you naturally express yourself?",
       options: [
         "I think deeply, then choose my words carefully",
-        "I'm playful, spontaneous, and think out loud",
+        "I&apos;m playful, spontaneous, and think out loud",
         "I say exactly what I mean, no dancing around it",
         "I speak in stories, images, and metaphors",
         "I like to explore ideas logically and systematically",
@@ -73,12 +73,12 @@ export const ChatbotOnboarding = () => {
     },
     {
       id: 'values',
-      content: "What values feel most essential to who you are? Pick the ones that, if you couldn't honor them, you wouldn't feel like yourself.\n\nChoose up to 4 that feel most true.",
+      content: "What values feel most essential to who you are? Pick the ones that, if you couldn&apos;t honor them, you wouldn&apos;t feel like yourself.\n\nChoose up to 4 that feel most true.",
       options: [
         "Authenticity - being genuinely me",
         "Growth - constantly becoming",
         "Creativity - bringing new things to life",
-        "Justice - standing up for what's right",
+        "Justice - standing up for what&apos;s right",
         "Adventure - embracing the unknown",
         "Peace - creating harmony and calm",
         "Service - contributing something meaningful",
@@ -94,11 +94,11 @@ export const ChatbotOnboarding = () => {
       id: 'worldview',
       content: "What feels most true about life and people to you?",
       options: [
-        "Life is about growing into who we're meant to be",
+        "Life is about growing into who we&apos;re meant to be",
         "Everything comes down to love and connection",
-        "We're here to contribute something meaningful",
+        "We&apos;re here to contribute something meaningful",
         "Life is meant to be fully experienced and savored",
-        "We're all creators, here to make something beautiful",
+        "We&apos;re all creators, here to make something beautiful",
         "Wisdom comes through both struggle and joy",
         "Freedom and choice are what make us human",
         "Balance and harmony are where we thrive"
@@ -108,7 +108,7 @@ export const ChatbotOnboarding = () => {
     },
     {
       id: 'essence',
-      content: "Here's the real question: What's the deeper \"why\" that drives who you are?\n\nThink about what makes you come alive, or what you'd want someone to understand about you if they could see into your heart.\n\nExample: \"I believe everyone has a unique light, and I come alive helping people find theirs. Connection and authenticity can heal so much.\"\n\nYour turn—what's at the core of who you are? (Keep it to 2-3 sentences)",
+      content: "Here&apos;s the real question: What&apos;s the deeper \"why\" that drives who you are?\n\nThink about what makes you come alive, or what you&apos;d want someone to understand about you if they could see into your heart.\n\nExample: \"I believe everyone has a unique light, and I come alive helping people find theirs. Connection and authenticity can heal so much.\"\n\nYour turn—what&apos;s at the core of who you are? (Keep it to 2-3 sentences)",
       dataKey: 'essence_summary' as keyof OnboardingData,
       inputType: 'text'
     },
@@ -116,7 +116,7 @@ export const ChatbotOnboarding = () => {
       id: 'life_season',
       content: "What season of life are you in?",
       options: [
-        "Exploring who I'm becoming",
+        "Exploring who I&apos;m becoming",
         "Building something meaningful",
         "In transition and reimagining everything",
         "Deepening what I already know about myself",
@@ -215,7 +215,7 @@ export const ChatbotOnboarding = () => {
     } else {
       // Onboarding complete
       setTimeout(() => {
-        addBotMessage("Beautiful.\n\nBased on what you've shared, I can see the depth of who you are. You've given us something real to work with—not just preferences, but your actual essence.", undefined, true);
+        addBotMessage("Beautiful.\n\nBased on what you&apos;ve shared, I can see the depth of who you are. You&apos;ve given us something real to work with—not just preferences, but your actual essence.", undefined, true);
         setShowCompletion(true);
       }, 2000);
     }
@@ -327,7 +327,7 @@ export const ChatbotOnboarding = () => {
                     onClick={handleContinue}
                     className="innerview-button w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"
                   >
-                    Let's find your people 🌱
+                    Let&apos;s find your people 🌱
                   </button>
                 </div>
               )}
@@ -359,7 +359,7 @@ export const ChatbotOnboarding = () => {
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleTextSubmit()}
-              placeholder="Share what's at the core of who you are..."
+              placeholder="Share what&apos;s at the core of who you are..."
               className="innerview-input flex-1"
               disabled={isTyping}
             />
