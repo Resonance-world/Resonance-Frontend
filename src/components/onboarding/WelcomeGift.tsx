@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ResonanceLogo } from '@/components/ui/ResonanceLogo';
+import Image from 'next/image';
 
 /**
  * WelcomeGift - Shows the generated NFT gift based on conversation
@@ -43,9 +44,11 @@ export const WelcomeGift = () => {
         {/* NFT Artwork */}
         <div className="relative w-full max-w-sm">
           <div className={`aspect-square rounded-lg overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-            <img
+            <Image
               src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop&crop=center"
               alt="Your unique NFT artwork"
+              width={400}
+              height={400}
               className="w-full h-full object-cover"
               onLoad={() => setIsLoaded(true)}
             />

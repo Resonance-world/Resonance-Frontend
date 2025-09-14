@@ -3,6 +3,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { CircleProfile } from '@/types/circles';
+import Image from 'next/image';
 
 interface ProfileCardProps {
   profile: CircleProfile;
@@ -55,9 +56,11 @@ export const ProfileCard = ({ profile, onClick, isDragging }: ProfileCardProps) 
       {/* Profile Image Container */}
       <div className="relative mb-2">
         <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-dashed" style={{borderColor: 'var(--resonance-border-card)'}}>
-          <img 
+          <Image 
             src={profile.profileImage} 
             alt={profile.name}
+            width={80}
+            height={80}
             className="w-full h-full object-cover"
           />
         </div>

@@ -36,12 +36,7 @@ export default function ClientProviders({
   
   return (
     <ErudaProvider>
-      <MiniKitProvider
-        config={{
-          enableTelemetry: false,
-          // Add any required MiniKit configuration here
-        }}
-      >
+      <MiniKitProvider>
         <SessionProvider session={session}>{children}</SessionProvider>
       </MiniKitProvider>
     </ErudaProvider>

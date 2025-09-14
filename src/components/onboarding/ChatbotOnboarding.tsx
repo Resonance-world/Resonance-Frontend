@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ResonanceLogo } from '@/components/ui/ResonanceLogo';
+import { Session } from 'next-auth';
 
 interface ChatMessage {
   id: string;
@@ -25,7 +26,7 @@ interface OnboardingData {
 }
 
 interface ChatbotOnboardingProps {
-  session?: any; // Session from NextAuth or null for guest mode
+  session?: Session | null; // Session from NextAuth or null for guest mode
 }
 
 /**

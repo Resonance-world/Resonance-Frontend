@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { GardenProfile } from '@/types/garden';
+import Image from 'next/image';
 
 interface PublicGardenProps {
   profile: GardenProfile;
@@ -42,9 +43,11 @@ export const PublicGarden = ({ profile }: PublicGardenProps) => {
         {/* Profile Header */}
         <div className="text-center space-y-4">
           <div className="relative w-24 h-24 mx-auto">
-            <img 
+            <Image 
               src={profile.profileImage} 
               alt={profile.name}
+              width={96}
+              height={96}
               className="w-full h-full rounded-full object-cover border-2 border-[#2081E2]"
             />
           </div>
@@ -59,9 +62,11 @@ export const PublicGarden = ({ profile }: PublicGardenProps) => {
         <div className="space-y-3">
           <h3 className="text-white/80 text-sm font-medium">NFT</h3>
           <div className="aspect-square rounded-lg bg-gray-800 overflow-hidden max-w-sm mx-auto">
-            <img 
+            <Image 
               src={profile.nftImage} 
               alt={`${profile.name}'s NFT`}
+              width={400}
+              height={400}
               className="w-full h-full object-cover"
             />
           </div>

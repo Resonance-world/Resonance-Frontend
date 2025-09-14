@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 
 interface ProfilePictureUploadProps {
   currentImage: string;
@@ -70,9 +71,11 @@ export const ProfilePictureUpload = ({ currentImage, onImageChange }: ProfilePic
       {/* Current Image */}
       <div className="relative w-full max-w-sm mx-auto">
         <div className="aspect-square rounded-lg overflow-hidden">
-          <img
+          <Image
             src={currentImage}
             alt="Profile picture"
+            width={400}
+            height={400}
             className={`w-full h-full object-cover transition-opacity ${
               isUploading ? 'opacity-50' : 'opacity-100'
             }`}
