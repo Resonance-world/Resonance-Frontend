@@ -1,18 +1,35 @@
-/* Design tokens extracted from Figma wireframes */
+/* Design tokens extracted from Figma wireframes - RESONANCE Theme */
 :root {
-  /* Colors from Figma */
-  --innerview-dark-bg: #1a2520;
-  --innerview-dark-surface: #243329;
-  --innerview-card-bg: #2a3f32;
-  --innerview-text-primary: #ffffff;
-  --innerview-text-secondary: #a8b5a8;
-  --innerview-text-muted: #6b8071;
-  --innerview-accent-green: #4ade80;
-  --innerview-button-bg: rgba(74, 222, 128, 0.1);
-  --innerview-button-border: rgba(74, 222, 128, 0.3);
-  --innerview-button-hover: rgba(74, 222, 128, 0.2);
-  --innerview-success-green: #22c55e;
-  --innerview-border-subtle: rgba(255, 255, 255, 0.1);
+  /* Colors from Figma - Dark Brown Theme */
+  --resonance-dark-bg: #2d1f17;
+  --resonance-dark-surface: #3d2b20;
+  --resonance-card-bg: #4a342a;
+  --resonance-card-hover: #553c30;
+  --resonance-text-primary: #ffffff;
+  --resonance-text-secondary: #c4a788;
+  --resonance-text-muted: #8b7355;
+  --resonance-accent-orange: #d97706;
+  --resonance-accent-gold: #f59e0b;
+  --resonance-button-bg: rgba(217, 119, 6, 0.1);
+  --resonance-button-border: rgba(217, 119, 6, 0.3);
+  --resonance-button-hover: rgba(217, 119, 6, 0.2);
+  --resonance-success-green: #16a34a;
+  --resonance-border-subtle: rgba(255, 255, 255, 0.1);
+  --resonance-border-card: rgba(196, 167, 136, 0.2);
+  
+  /* Legacy aliases for compatibility */
+  --innerview-dark-bg: var(--resonance-dark-bg);
+  --innerview-dark-surface: var(--resonance-dark-surface);
+  --innerview-card-bg: var(--resonance-card-bg);
+  --innerview-text-primary: var(--resonance-text-primary);
+  --innerview-text-secondary: var(--resonance-text-secondary);
+  --innerview-text-muted: var(--resonance-text-muted);
+  --innerview-accent-green: var(--resonance-accent-orange);
+  --innerview-button-bg: var(--resonance-button-bg);
+  --innerview-button-border: var(--resonance-button-border);
+  --innerview-button-hover: var(--resonance-button-hover);
+  --innerview-success-green: var(--resonance-success-green);
+  --innerview-border-subtle: var(--resonance-border-subtle);
   
   /* Typography from Figma */
   --innerview-font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -52,6 +69,11 @@
 .innerview-dark {
   background-color: var(--innerview-dark-bg);
   color: var(--innerview-text-primary);
+}
+
+.resonance-dark {
+  background-color: var(--resonance-dark-bg);
+  color: var(--resonance-text-primary);
 }
 
 /* Card styles for home page */
@@ -270,4 +292,110 @@
   outline: none;
   border-color: var(--innerview-accent-green);
   box-shadow: 0 0 0 1px var(--innerview-accent-green);
+}
+
+/* Resonance-specific styles */
+.resonance-card {
+  background-color: var(--resonance-card-bg);
+  border: 1px solid var(--resonance-border-card);
+  border-radius: var(--innerview-radius-lg);
+  padding: var(--innerview-space-lg);
+  transition: all 0.2s ease;
+}
+
+.resonance-card:hover {
+  background-color: var(--resonance-card-hover);
+}
+
+.resonance-button {
+  background: var(--resonance-button-bg);
+  border: 1px solid var(--resonance-button-border);
+  color: var(--resonance-text-primary);
+  padding: var(--innerview-space-sm) var(--innerview-space-md);
+  border-radius: var(--innerview-radius-sm);
+  font-size: var(--innerview-font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resonance-button:hover {
+  background: var(--resonance-button-hover);
+  border-color: var(--resonance-accent-orange);
+}
+
+.resonance-button-primary {
+  background: var(--resonance-accent-orange);
+  border-color: var(--resonance-accent-orange);
+  color: white;
+}
+
+.resonance-button-primary:hover {
+  background: #b45309;
+  border-color: #b45309;
+}
+
+/* Profile card styles for circles */
+.resonance-profile-card {
+  background-color: var(--resonance-card-bg);
+  border: 2px solid var(--resonance-border-card);
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.resonance-profile-card:hover {
+  border-color: var(--resonance-accent-orange);
+  transform: scale(1.05);
+}
+
+.resonance-profile-card .status-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #16a34a;
+  border: 2px solid var(--resonance-dark-bg);
+}
+
+/* Resonance navigation styles */
+.resonance-bottom-nav {
+  border-top: 1px solid var(--resonance-border-subtle);
+  padding: var(--innerview-space-md);
+  padding-bottom: calc(var(--innerview-space-md) + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  min-height: 80px;
+  z-index: 50;
+}
+
+.resonance-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--innerview-space-xs);
+  color: var(--resonance-text-secondary);
+  text-decoration: none;
+  font-size: var(--innerview-font-size-xs);
+  transition: color 0.2s ease;
+  padding: 8px;
+}
+
+.resonance-nav-item.active {
+  color: var(--resonance-accent-orange);
+}
+
+.resonance-nav-item:hover {
+  color: var(--resonance-text-primary);
 } 

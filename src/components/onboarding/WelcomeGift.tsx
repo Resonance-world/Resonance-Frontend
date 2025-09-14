@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { ResonanceLogo } from '@/components/ui/ResonanceLogo';
 
 /**
  * WelcomeGift - Shows the generated NFT gift based on conversation
@@ -30,15 +31,10 @@ export const WelcomeGift = () => {
   };
 
   return (
-    <div className="innerview-dark min-h-screen flex flex-col">
+    <div className="resonance-dark min-h-screen flex flex-col" style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
       {/* Header */}
       <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-bold">IV</span>
-          </div>
-          <span className="text-white font-medium">InnerView</span>
-        </div>
+        <ResonanceLogo size="sm" />
         <span className="text-white/60 text-sm">welcome gift</span>
       </div>
 
@@ -86,17 +82,17 @@ export const WelcomeGift = () => {
             Based on our conversation, here&apos;s your unique ID card.
           </p>
           <p className="text-white font-medium text-lg">
-            Welcome to InnerView
+            Welcome to RESONANCE
           </p>
         </div>
 
         {/* Continue button */}
         <button
           onClick={handleContinue}
-          className="innerview-button px-8 py-3 mt-8"
+          className="resonance-button-primary px-8 py-3 mt-8 rounded-lg"
           disabled={!isLoaded}
         >
-          {isLoaded ? 'Enter InnerView' : 'Preparing...'}
+          {isLoaded ? 'Enter RESONANCE' : 'Preparing...'}
         </button>
       </div>
 

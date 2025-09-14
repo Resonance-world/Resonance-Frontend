@@ -18,6 +18,7 @@ import {
 import { Circle, MOCK_CIRCLES, CircleProfile } from '@/types/circles';
 import { ProfileCard } from './ProfileCard';
 import { BottomNavigation } from '../home/BottomNavigation';
+import { ResonanceLogo } from '../ui/ResonanceLogo';
 
 /**
  * CirclesPage - Main circles interface with drag-drop
@@ -110,100 +111,80 @@ export const CirclesPage = () => {
     : circles.filter(circle => circle.id === activeTab);
 
   return (
-    <div className="innerview-dark min-h-screen flex flex-col">
+    <div className="resonance-dark min-h-screen flex flex-col" style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         {/* Header */}
-        <div className="p-4 border-b border-white/10">
-          <h1 className="text-white text-xl font-medium text-center">My circles</h1>
+        <div className="flex items-center justify-between p-4 border-b" style={{borderColor: 'var(--resonance-border-subtle)'}}>
+          <ResonanceLogo size="sm" />
+          <button className="text-white/60">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        
+        {/* Page Title */}
+        <div className="p-4">
+          <h1 className="text-white text-2xl font-bold">MY CIRCLES</h1>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-white/10">
+        <div className="flex border-b px-4" style={{borderColor: 'var(--resonance-border-subtle)'}}>
           <button
             onClick={() => setActiveTab('all')}
-            className={`flex-1 py-3 px-4 text-sm font-medium ${
+            className={`py-3 px-1 text-sm font-medium mr-6 ${
               activeTab === 'all'
-                ? 'text-white border-b-2 border-[#2081E2]'
-                : 'text-white/60'
+                ? 'text-white border-b-2 border-orange-500'
+                : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            All circles ({circles.reduce((total, circle) => total + circle.profiles.length, 0)})
+            All
           </button>
           {circles.map(circle => (
             <button
               key={circle.id}
               onClick={() => setActiveTab(circle.id)}
-              className={`flex-1 py-3 px-4 text-sm font-medium ${
+              className={`py-3 px-1 text-sm font-medium mr-6 ${
                 activeTab === circle.id
-                  ? 'text-white border-b-2 border-[#2081E2]'
-                  : 'text-white/60'
+                  ? 'text-white border-b-2 border-orange-500'
+                  : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              {circle.name} ({circle.profiles.length})
+              {circle.name}
             </button>
           ))}
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-4 innerview-safe-bottom-large">
-          {activeTab === 'all' ? (
-            // All circles view
-            <div className="space-y-6">
-              {circles.map(circle => (
-                <div key={circle.id} className="space-y-3">
-                  <h2 className="text-white/80 text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 bg-[#2081E2] rounded-full"></span>
-                    {circle.name} ({circle.profiles.length})
-                  </h2>
-                  
-                  <SortableContext 
-                    items={circle.profiles.map(p => p.id)}
-                    strategy={verticalListSortingStrategy}
-                    id={circle.id}
-                  >
-                    <div className="grid grid-cols-2 gap-3">
-                      {circle.profiles.map(profile => (
-                        <ProfileCard
-                          key={profile.id}
-                          profile={profile}
-                          onClick={() => handleProfileClick(profile.id)}
-                          isDragging={activeProfile?.id === profile.id}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </div>
+        <div className="flex-1 p-4 pb-24">
+          <SortableContext 
+            items={activeTab === 'all' 
+              ? circles.flatMap(c => c.profiles.map(p => p.id))
+              : filteredCircles.flatMap(c => c.profiles.map(p => p.id))
+            }
+            strategy={verticalListSortingStrategy}
+            id={activeTab}
+          >
+            <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
+              {(activeTab === 'all' 
+                ? circles.flatMap(circle => circle.profiles)
+                : filteredCircles.flatMap(circle => circle.profiles)
+              ).map(profile => (
+                <ProfileCard
+                  key={profile.id}
+                  profile={profile}
+                  onClick={() => handleProfileClick(profile.id)}
+                  isDragging={activeProfile?.id === profile.id}
+                />
               ))}
             </div>
-          ) : (
-            // Single circle view
-            <div className="space-y-4">
-              {filteredCircles.map(circle => (
-                <div key={circle.id}>
-                  <SortableContext 
-                    items={circle.profiles.map(p => p.id)}
-                    strategy={verticalListSortingStrategy}
-                    id={circle.id}
-                  >
-                    <div className="grid grid-cols-2 gap-3">
-                      {circle.profiles.map(profile => (
-                        <ProfileCard
-                          key={profile.id}
-                          profile={profile}
-                          onClick={() => handleProfileClick(profile.id)}
-                          isDragging={activeProfile?.id === profile.id}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </div>
-              ))}
-            </div>
-          )}
+          </SortableContext>
         </div>
 
         <DragOverlay>

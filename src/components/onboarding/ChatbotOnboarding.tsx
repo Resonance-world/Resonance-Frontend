@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { ResonanceLogo } from '@/components/ui/ResonanceLogo';
 
 interface ChatMessage {
   id: string;
@@ -23,11 +24,15 @@ interface OnboardingData {
   life_season?: string;
 }
 
+interface ChatbotOnboardingProps {
+  session?: any; // Session from NextAuth or null for guest mode
+}
+
 /**
  * ChatbotOnboarding - Human-centered conversational onboarding
  * "Every encounter is an invitation to meet another layer of yourself."
  */
-export const ChatbotOnboarding = () => {
+export const ChatbotOnboarding = ({ session }: ChatbotOnboardingProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [, setOnboardingData] = useState<OnboardingData>({});
@@ -39,6 +44,29 @@ export const ChatbotOnboarding = () => {
   const router = useRouter();
 
   console.log('🤖 Chatbot Onboarding initialized');
+
+  // Check if user has already completed onboarding
+  useEffect(() => {
+    const checkOnboardingStatus = () => {
+      let completedOnboarding = false;
+      
+      if (session?.user?.id) {
+        // Authenticated user
+        completedOnboarding = localStorage.getItem(`onboarding-completed-${session.user.id}`) === 'true';
+      } else {
+        // Guest user
+        completedOnboarding = localStorage.getItem('onboarding-completed-guest') === 'true';
+      }
+      
+      if (completedOnboarding) {
+        console.log('✅ User has already completed onboarding, redirecting to home');
+        router.push('/home');
+        return;
+      }
+    };
+
+    checkOnboardingStatus();
+  }, [session, router]);
 
   const questions = useMemo(() => [
     {
@@ -255,8 +283,18 @@ export const ChatbotOnboarding = () => {
   };
 
   const handleContinue = () => {
-    console.log('🎉 Onboarding complete, redirecting to loading...');
-    router.push('/onboarding/loading');
+    console.log('🎉 Onboarding complete, saving completion status...');
+    
+    // Save onboarding completion status
+    if (session?.user?.id) {
+      localStorage.setItem(`onboarding-completed-${session.user.id}`, 'true');
+    } else {
+      // For guest users, use a generic key
+      localStorage.setItem('onboarding-completed-guest', 'true');
+    }
+    
+    console.log('✅ Onboarding completion saved, redirecting to gift...');
+    router.push('/onboarding/gift');
   };
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -264,15 +302,11 @@ export const ChatbotOnboarding = () => {
   const showInput = currentQuestion?.inputType === 'text';
 
   return (
-    <div className="innerview-dark min-h-screen flex flex-col">
+    <div className="resonance-dark min-h-screen flex flex-col" style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
       {/* Header with logo */}
-      <div className="flex items-center justify-between p-4 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-bold">IV</span>
-          </div>
-          <span className="text-white font-medium">InnerView</span>
-        </div>
+      <div className="flex items-center justify-between p-4 border-b" style={{borderColor: 'var(--resonance-border-subtle)'}}>
+        <ResonanceLogo size="sm" />
+        <span className="text-white/60 text-sm">onboarding</span>
       </div>
 
       {/* Chat messages */}

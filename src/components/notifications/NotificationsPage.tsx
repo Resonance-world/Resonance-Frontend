@@ -1,0 +1,210 @@
+'use client';
+
+import { useState } from 'react';
+import { BottomNavigation } from '@/components/home/BottomNavigation';
+import { ResonanceLogo } from '@/components/ui/ResonanceLogo';
+
+type NotificationTab = 'All' | 'Match' | 'Circle' | 'Prompt' | 'Pending';
+
+interface Notification {
+  id: string;
+  type: 'match' | 'circle' | 'prompt' | 'reflection';
+  icon: string;
+  title: string;
+  description: string;
+  actionText?: string;
+  secondaryActionText?: string;
+  timestamp?: string;
+  status?: 'pending' | 'active' | 'completed';
+}
+
+/**
+ * NotificationsPage - Main notifications interface
+ * Implements the card-based notification system from Figma
+ */
+export const NotificationsPage = () => {
+  const [activeTab, setActiveTab] = useState<NotificationTab>('All');
+
+  // Mock notifications data based on screenshots
+  const notifications: Notification[] = [
+    {
+      id: '1',
+      type: 'match',
+      icon: '💖',
+      title: '"Computer mind or human mind"',
+      description: 'Your prompt has found resonance. Would you like to meet them?',
+      actionText: 'Yes',
+      secondaryActionText: 'Not yet',
+      status: 'pending'
+    },
+    {
+      id: '2',
+      type: 'circle',
+      icon: '🎁',
+      title: 'You are now part of [user]\'s circle',
+      description: 'Explore their inner garden',
+      actionText: 'Go to inner garden',
+      status: 'active'
+    },
+    {
+      id: '3',
+      type: 'prompt',
+      icon: 'O',
+      title: 'Your prompt "Computer mind or human mind" has completed its cycle.',
+      description: 'Ready to release it and plant a new one?',
+      actionText: 'Craft new prompt',
+      status: 'completed'
+    },
+    {
+      id: '4',
+      type: 'reflection',
+      icon: '👁',
+      title: 'Today\'s reflection is here',
+      description: '"What made you feel alive today?"',
+      actionText: 'Reflect',
+      status: 'active'
+    }
+  ];
+
+  const tabs: NotificationTab[] = ['All', 'Match', 'Circle', 'Prompt', 'Pending'];
+
+  const filterNotifications = (tab: NotificationTab) => {
+    if (tab === 'All') return notifications;
+    if (tab === 'Pending') return notifications.filter(n => n.status === 'pending');
+    return notifications.filter(n => n.type === tab.toLowerCase());
+  };
+
+  const filteredNotifications = filterNotifications(activeTab);
+
+  return (
+    <div className="resonance-dark min-h-screen" style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b" style={{borderColor: 'var(--resonance-border-subtle)'}}>
+        <ResonanceLogo size="sm" />
+        <button className="text-white/60">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Page Title */}
+      <div className="p-4">
+        <h1 className="text-2xl font-bold text-white mb-4">NOTIFICATION</h1>
+        
+        {/* Tabs */}
+        <div className="flex gap-4 mb-6 border-b" style={{borderColor: 'var(--resonance-border-subtle)'}}>
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-2 px-1 text-sm transition-colors ${
+                activeTab === tab
+                  ? 'text-white border-b-2 border-orange-500'
+                  : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Pending notice */}
+        {activeTab === 'Pending' && (
+          <p className="text-gray-400 text-sm mb-4">
+            Inactive invitation automatically dissolve after 30 days.
+          </p>
+        )}
+      </div>
+
+      {/* Notifications List */}
+      <div className="px-4 pb-24 space-y-4">
+        {filteredNotifications.map((notification) => (
+          <div
+            key={notification.id}
+            className="rounded-lg border p-4 transition-colors hover:bg-opacity-80"
+            style={{
+              backgroundColor: 'var(--resonance-card-bg)',
+              borderColor: 'var(--resonance-border-card)'
+            }}
+          >
+            {/* Icon */}
+            <div className="mb-3">
+              {notification.type === 'match' && (
+                <div className="w-8 h-8 bg-pink-600 rounded flex items-center justify-center">
+                  <span className="text-white text-sm">💖</span>
+                </div>
+              )}
+              {notification.type === 'circle' && (
+                <div className="w-8 h-8 bg-yellow-600 rounded flex items-center justify-center">
+                  <span className="text-white text-sm">🎁</span>
+                </div>
+              )}
+              {notification.type === 'prompt' && (
+                <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-lg font-bold">O</span>
+                </div>
+              )}
+              {notification.type === 'reflection' && (
+                <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                  <span className="text-white text-sm">👁</span>
+                </div>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="mb-4">
+              <h3 className="text-white font-medium mb-2 leading-snug">
+                {notification.title}
+              </h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                {notification.description}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              {notification.actionText && (
+                <button
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  style={{
+                    backgroundColor: 'var(--resonance-button-bg)',
+                    borderColor: 'var(--resonance-button-border)',
+                    color: 'var(--resonance-text-primary)'
+                  }}
+                >
+                  {notification.actionText}
+                  {notification.actionText === 'Reflect' && (
+                    <span className="ml-2">▶</span>
+                  )}
+                </button>
+              )}
+              {notification.secondaryActionText && (
+                <button
+                  className="px-4 py-2 rounded-lg text-sm font-medium border transition-colors hover:bg-white/5"
+                  style={{
+                    borderColor: 'var(--resonance-border-card)',
+                    color: 'var(--resonance-text-secondary)'
+                  }}
+                >
+                  {notification.secondaryActionText}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {filteredNotifications.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-400">No notifications in this category</p>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Navigation */}
+      <BottomNavigation currentPage="notifications" />
+    </div>
+  );
+};

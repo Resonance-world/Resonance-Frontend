@@ -47,15 +47,14 @@ export const ProfileCard = ({ profile, onClick, isDragging }: ProfileCardProps) 
       {...attributes}
       {...listeners}
       className={`
-        relative bg-white/5 border border-white/10 rounded-lg p-3 cursor-pointer
-        transition-all duration-200 hover:bg-white/10 hover:border-white/20
-        ${isDragging || isSortableDragging ? 'opacity-50 scale-105 rotate-2 z-50' : ''}
+        flex flex-col items-center cursor-pointer transition-all duration-200
+        ${isDragging || isSortableDragging ? 'opacity-50 scale-105 z-50' : ''}
       `}
       onClick={handleClick}
     >
-      {/* Profile Image */}
-      <div className="relative mb-3">
-        <div className="w-16 h-16 mx-auto rounded-full overflow-hidden border border-white/20">
+      {/* Profile Image Container */}
+      <div className="relative mb-2">
+        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-dashed" style={{borderColor: 'var(--resonance-border-card)'}}>
           <img 
             src={profile.profileImage} 
             alt={profile.name}
@@ -63,39 +62,15 @@ export const ProfileCard = ({ profile, onClick, isDragging }: ProfileCardProps) 
           />
         </div>
         
-        {/* Notification indicator */}
-        {profile.hasUnreadMessages && (
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#2081E2] rounded-full border border-black/20"></div>
-        )}
+        {/* Green status indicator */}
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2" style={{borderColor: 'var(--resonance-dark-bg)'}}></div>
       </div>
 
-      {/* Profile Info */}
+      {/* Profile Name */}
       <div className="text-center">
-        <h3 className="text-white text-sm font-medium mb-1">
+        <h3 className="text-white text-sm font-medium">
           {profile.name}
         </h3>
-        
-        <p className="text-white/60 text-xs leading-relaxed">
-          Last active: {profile.lastActivity.toLocaleDateString()}
-        </p>
-        
-        {profile.lastActivity && (
-          <p className="text-white/40 text-xs mt-1">
-            {profile.lastActivity.toLocaleTimeString()}
-          </p>
-        )}
-      </div>
-
-      {/* Drag handle indicator */}
-      <div className="absolute top-2 right-2 opacity-30 hover:opacity-60">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
-          <circle cx="9" cy="12" r="1"/>
-          <circle cx="9" cy="5" r="1"/>
-          <circle cx="9" cy="19" r="1"/>
-          <circle cx="15" cy="12" r="1"/>
-          <circle cx="15" cy="5" r="1"/>
-          <circle cx="15" cy="19" r="1"/>
-        </svg>
       </div>
     </div>
   );

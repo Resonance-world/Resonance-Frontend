@@ -32,9 +32,16 @@ export default function ClientProviders({
   children,
   session,
 }: ClientProvidersProps) {
+  console.log('🏗️ Initializing ClientProviders with MiniKit...');
+  
   return (
     <ErudaProvider>
-      <MiniKitProvider>
+      <MiniKitProvider
+        config={{
+          enableTelemetry: false,
+          // Add any required MiniKit configuration here
+        }}
+      >
         <SessionProvider session={session}>{children}</SessionProvider>
       </MiniKitProvider>
     </ErudaProvider>
