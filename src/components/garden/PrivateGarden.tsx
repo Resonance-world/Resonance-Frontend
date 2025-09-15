@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { GardenProfile, MOCK_USER_PROFILE } from '@/types/garden';
-import { BottomNavigation } from '../home/BottomNavigation';
 import { ProfilePictureUpload } from './ProfilePictureUpload';
 
 /**
@@ -109,25 +108,9 @@ export const PrivateGarden = () => {
   };
 
   return (
-    <div className="innerview-dark min-h-screen flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-bold">IV</span>
-          </div>
-          <span className="text-white font-medium">InnerView</span>
-        </div>
-        
-        <button className="text-white/60 hover:text-white">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 12h18M3 6h18M3 18h18"/>
-          </svg>
-        </button>
-      </div>
-
+    <div className="min-h-screen">
       {/* Content */}
-      <div className="flex-1 p-4 innerview-safe-bottom-large">
+      <div className="p-4">
         {/* Profile Header */}
         <div className="text-center mb-6">
           <h1 className="text-white text-2xl font-light italic mb-4">{profile.name}&apos;s Private Garden</h1>
@@ -254,8 +237,6 @@ export const PrivateGarden = () => {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation currentPage="garden" />
     </div>
   );
 }; 

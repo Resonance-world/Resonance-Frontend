@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ResonanceLogo } from '@/components/ui/ResonanceLogo';
+import { FixedHeader } from '@/components/ui/FixedHeader';
 import { Session } from 'next-auth';
 
 interface ChatMessage {
@@ -303,15 +303,26 @@ export const ChatbotOnboarding = ({ session }: ChatbotOnboardingProps) => {
   const showInput = currentQuestion?.inputType === 'text';
 
   return (
-    <div className="resonance-dark min-h-screen flex flex-col" style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
-      {/* Header with logo */}
-      <div className="flex items-center justify-between p-4 border-b" style={{borderColor: 'var(--resonance-border-subtle)'}}>
-        <ResonanceLogo size="sm" />
-        <span className="text-white/60 text-sm">onboarding</span>
+    <div className="min-h-screen flex flex-col relative">
+      {/* Onboarding Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/onboarding_background.png)',
+          filter: 'brightness(0.4) sepia(0.2) saturate(1.2)'
+        }}
+      />
+      
+      {/* Dark overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/40" />
+
+      {/* Fixed Header */}
+      <div className="relative z-10">
+        <FixedHeader />
       </div>
 
-      {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Chat messages with proper spacing */}
+      <div className="relative z-10 flex-1 overflow-y-auto pt-16 pb-20 p-4 space-y-4">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -385,9 +396,12 @@ export const ChatbotOnboarding = ({ session }: ChatbotOnboardingProps) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area - only show for text questions */}
+      {/* Fixed Input area - only show for text questions */}
       {showInput && !showCompletion && (
-        <div className="p-4 border-t border-white/10">
+        <div className="relative z-10 fixed bottom-0 left-0 right-0 p-4 border-t" style={{
+          backgroundColor: 'var(--resonance-dark-bg)',
+          borderColor: 'var(--resonance-border-subtle)'
+        }}>
           <div className="flex gap-2">
             <input
               type="text"

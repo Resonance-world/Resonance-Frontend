@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { MyPrompt } from './MyPrompt';
 import { YourMatches } from './YourMatches';
-import { BottomNavigation } from './BottomNavigation';
 import { Prompt, Match } from '@/types/home';
 
 interface Session {
@@ -77,26 +76,9 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
   const displayName = session?.user?.name || session?.user?.username || 'Friend';
 
   return (
-    <div className="innerview-dark min-h-screen flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-bold">IV</span>
-          </div>
-          <span className="text-white font-medium">InnerView</span>
-        </div>
-        
-        {/* Menu button */}
-        <button className="text-white/60 hover:text-white">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </button>
-      </div>
-
+    <div className="min-h-screen">
       {/* Main content */}
-      <div className="flex-1 p-4 innerview-safe-bottom-large space-y-6">
+      <div className="p-4 space-y-6">
         {/* Greeting */}
         <div className="text-center">
           <h1 className="text-white text-2xl font-light italic">
@@ -118,8 +100,6 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
         />
       </div>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation currentPage="living-room" />
     </div>
   );
 }; 

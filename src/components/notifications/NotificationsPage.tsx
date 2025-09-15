@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { BottomNavigation } from '@/components/home/BottomNavigation';
-import { ResonanceLogo } from '@/components/ui/ResonanceLogo';
 
 type NotificationTab = 'All' | 'Match' | 'Circle' | 'Prompt' | 'Pending';
 
@@ -77,18 +75,7 @@ export const NotificationsPage = () => {
   const filteredNotifications = filterNotifications(activeTab);
 
   return (
-    <div className="resonance-dark min-h-screen" style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b" style={{borderColor: 'var(--resonance-border-subtle)'}}>
-        <ResonanceLogo size="sm" />
-        <button className="text-white/60">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
-      </div>
+    <div className="min-h-screen">{/* Page removed header - now using global fixed header */}
 
       {/* Page Title */}
       <div className="p-4">
@@ -204,7 +191,6 @@ export const NotificationsPage = () => {
       </div>
 
       {/* Bottom Navigation */}
-      <BottomNavigation currentPage="notifications" />
     </div>
   );
 };

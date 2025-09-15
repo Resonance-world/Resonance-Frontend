@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ResonanceLogo } from '@/components/ui/ResonanceLogo';
+import { FixedHeader } from '@/components/ui/FixedHeader';
 import Image from 'next/image';
 
 /**
@@ -32,15 +32,12 @@ export const WelcomeGift = () => {
   };
 
   return (
-    <div className="resonance-dark min-h-screen flex flex-col" style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4">
-        <ResonanceLogo size="sm" />
-        <span className="text-white/60 text-sm">welcome gift</span>
-      </div>
+    <div className="min-h-screen flex flex-col" style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
+      {/* Fixed Header */}
+      <FixedHeader />
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-6">
+      {/* Main content with proper spacing */}
+      <div className="flex-1 flex flex-col items-center justify-center pt-16 p-6 space-y-6">
         {/* NFT Artwork */}
         <div className="relative w-full max-w-sm">
           <div className={`aspect-square rounded-lg overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>

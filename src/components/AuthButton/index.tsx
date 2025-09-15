@@ -51,7 +51,7 @@ export const AuthButton = () => {
   }, [isInstalled, isPending]);
 
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-4">
       <LiveFeedback
         label={{
           failed: 'Authentication failed',
@@ -65,37 +65,27 @@ export const AuthButton = () => {
           disabled={isPending}
           size="lg"
           variant="primary"
-          className="w-full"
+          className="w-full py-4 text-lg font-semibold bg-amber-800/40 hover:bg-amber-700/50 backdrop-blur-md border border-amber-600/30 hover:border-amber-500/50 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
         >
           {isPending ? (
             <span className="flex items-center justify-center">
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-              Connecting to World App...
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3"></div>
+              Connecting to World...
             </span>
           ) : (
-            <>
-              <span className="mr-2">🌍</span>
-              Sign in with World App
-            </>
+            "Sign in with World"
           )}
         </Button>
       </LiveFeedback>
       
       {error && (
-        <div className="text-sm text-red-400 text-center space-y-1">
+        <div className="text-sm text-red-400 text-center space-y-2 bg-red-900/20 rounded-lg p-3 border border-red-500/20">
           <p>{error}</p>
           {!isInstalled && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-300">
               This app requires World App to function properly
             </p>
           )}
-        </div>
-      )}
-      
-      {/* Debug info for development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="text-xs text-gray-500 text-center">
-          MiniKit Status: {isInstalled ? '✅ Installed' : '❌ Not Detected'}
         </div>
       )}
     </div>

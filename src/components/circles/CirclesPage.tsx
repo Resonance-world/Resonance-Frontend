@@ -17,8 +17,6 @@ import {
 } from '@dnd-kit/sortable';
 import { Circle, MOCK_CIRCLES, CircleProfile } from '@/types/circles';
 import { ProfileCard } from './ProfileCard';
-import { BottomNavigation } from '../home/BottomNavigation';
-import { ResonanceLogo } from '../ui/ResonanceLogo';
 
 /**
  * CirclesPage - Main circles interface with drag-drop
@@ -117,18 +115,6 @@ export const CirclesPage = () => {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b" style={{borderColor: 'var(--resonance-border-subtle)'}}>
-          <ResonanceLogo size="sm" />
-          <button className="text-white/60">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <line x1="3" y1="12" x2="21" y2="12"/>
-              <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-          </button>
-        </div>
-        
         {/* Page Title */}
         <div className="p-4">
           <h1 className="text-white text-2xl font-bold">MY CIRCLES</h1>
@@ -164,25 +150,41 @@ export const CirclesPage = () => {
         {/* Content */}
         <div className="flex-1 p-4 pb-24">
           <SortableContext 
-            items={activeTab === 'all' 
-              ? circles.flatMap(c => c.profiles.map(p => p.id))
-              : filteredCircles.flatMap(c => c.profiles.map(p => p.id))
-            }
+            items={(() => {
+              const profiles = activeTab === 'all' 
+                ? circles.flatMap(circle => circle.profiles)
+                : filteredCircles.flatMap(circle => circle.profiles);
+              
+              // Remove duplicates and return IDs
+              const uniqueProfiles = profiles.filter((profile, index, self) => 
+                index === self.findIndex(p => p.id === profile.id)
+              );
+              
+              return uniqueProfiles.map(p => p.id);
+            })()}
             strategy={verticalListSortingStrategy}
             id={activeTab}
           >
             <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
-              {(activeTab === 'all' 
-                ? circles.flatMap(circle => circle.profiles)
-                : filteredCircles.flatMap(circle => circle.profiles)
-              ).map(profile => (
-                <ProfileCard
-                  key={profile.id}
-                  profile={profile}
-                  onClick={() => handleProfileClick(profile.id)}
-                  isDragging={activeProfile?.id === profile.id}
-                />
-              ))}
+              {(() => {
+                const profiles = activeTab === 'all' 
+                  ? circles.flatMap(circle => circle.profiles)
+                  : filteredCircles.flatMap(circle => circle.profiles);
+                
+                // Remove duplicates based on profile ID
+                const uniqueProfiles = profiles.filter((profile, index, self) => 
+                  index === self.findIndex(p => p.id === profile.id)
+                );
+                
+                return uniqueProfiles.map((profile, index) => (
+                  <ProfileCard
+                    key={`${profile.id}-${index}`}
+                    profile={profile}
+                    onClick={() => handleProfileClick(profile.id)}
+                    isDragging={activeProfile?.id === profile.id}
+                  />
+                ));
+              })()}
             </div>
           </SortableContext>
         </div>
@@ -190,6 +192,7 @@ export const CirclesPage = () => {
         <DragOverlay>
           {activeProfile ? (
             <ProfileCard
+              key={`overlay-${activeProfile.id}`}
               profile={activeProfile}
               onClick={() => {}}
               isDragging={true}
@@ -198,7 +201,6 @@ export const CirclesPage = () => {
         </DragOverlay>
       </DndContext>
 
-      <BottomNavigation currentPage="circles" />
     </div>
   );
 }; 
