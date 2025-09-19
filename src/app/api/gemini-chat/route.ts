@@ -54,7 +54,7 @@ TONE:
 Remember: Be brief, be real, be curious. No fluff. Just acknowledge and move forward.`;
 
     // Convert messages to Gemini format
-    const conversationHistory = messages.map(msg => ({
+    const conversationHistory = messages.map((msg: any) => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }]
     }));

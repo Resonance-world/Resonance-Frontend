@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { GardenProfile, MOCK_USER_PROFILE } from '@/types/garden';
 import { ProfilePictureUpload } from './ProfilePictureUpload';
+import { useUser } from '@/hooks/useUser';
 
 /**
  * PrivateGarden - User's private profile management
@@ -15,13 +16,24 @@ export const PrivateGarden = () => {
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
+  const { user: userData, loading: userLoading, updateUser } = useUser();
 
   console.log('🌱 Private Garden initialized for:', profile.name);
   console.log('👤 Session data:', session?.user);
 
-  // Update profile with World ID data when session is available
+  // Update profile with real user data when available
   useEffect(() => {
-    if (session?.user) {
+    if (userData) {
+      console.log('🔄 Updating profile with real user data:', userData);
+      setProfile(prev => ({
+        ...prev,
+        name: userData.name || userData.username || prev.name,
+        worldId: userData.username ? `@${userData.username}` : prev.worldId,
+        profileImage: userData.profilePictureUrl || prev.profileImage,
+        bio: userData.personalitySummary || prev.bio,
+        essence: userData.essenceKeywords ? [userData.essenceKeywords] : prev.essence
+      }));
+    } else if (session?.user) {
       console.log('🔄 Updating profile with World ID data:', session.user);
       setProfile(prev => ({
         ...prev,
@@ -30,7 +42,7 @@ export const PrivateGarden = () => {
         profileImage: session.user.profilePictureUrl || prev.profileImage
       }));
     }
-  }, [session]);
+  }, [userData, session]);
 
   const handleEditProfile = () => {
     console.log('✏️ Opening profile editor');
@@ -42,24 +54,11 @@ export const PrivateGarden = () => {
     setIsEditing(false);
     
     try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          bio: profile.bio,
-          socialLinks: profile.socialLinks,
-          profileImage: profile.profileImage,
-        }),
+      await updateUser({
+        username: profile.name,
+        profilePictureUrl: profile.profileImage
       });
-
-      if (response.ok) {
-        console.log('✅ Profile saved successfully');
-        // Optionally refresh session data
-      } else {
-        console.error('❌ Failed to save profile:', response.statusText);
-      }
+      console.log('✅ Profile saved successfully');
     } catch (error) {
       console.error('❌ Error saving profile:', error);
     }
@@ -77,21 +76,10 @@ export const PrivateGarden = () => {
     }));
 
     try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          profileImage: newImageUrl,
-        }),
+      await updateUser({
+        profilePictureUrl: newImageUrl
       });
-
-      if (response.ok) {
-        console.log('✅ Profile image updated successfully');
-      } else {
-        console.error('❌ Failed to update profile image:', response.statusText);
-      }
+      console.log('✅ Profile image updated successfully');
     } catch (error) {
       console.error('❌ Error updating profile image:', error);
     }
@@ -106,6 +94,14 @@ export const PrivateGarden = () => {
     console.log('🖼️ Profile image changed:', newImageUrl);
     await handleProfileImageUpdate(newImageUrl);
   };
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Loading your garden...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
