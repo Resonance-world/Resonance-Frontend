@@ -62,13 +62,56 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           console.log('Invalid final payload');
           return null;
         }
-        // Optionally, fetch the user info from your own database
-        const userInfo = await MiniKit.getUserInfo(finalPayload.address);
 
-        return {
-          id: finalPayload.address,
-          ...userInfo,
-        };
+        // Get user info from MiniKit
+        const userInfo = await MiniKit.getUserInfo(finalPayload.address);
+        
+        // Register/verify user in backend database
+        try {
+          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+          const verifyResponse = await fetch(`${backendUrl}/api/auth/verify`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              nullifier_hash: finalPayload.nullifier_hash,
+              verification_level: finalPayload.verification_level,
+              action: finalPayload.action,
+              walletAddress: finalPayload.address,
+              username: userInfo.username,
+              profilePictureUrl: userInfo.profilePictureUrl
+            }),
+          });
+
+          if (verifyResponse.ok) {
+            const verifyData = await verifyResponse.json();
+            console.log('✅ User registered in backend:', verifyData.user.id);
+            
+            // Return user with backend-generated ID
+            return {
+              id: verifyData.user.id, // Use backend-generated user ID
+              walletAddress: finalPayload.address,
+              ...userInfo,
+            };
+          } else {
+            console.error('❌ Failed to register user in backend');
+            // Fallback to wallet address as ID
+            return {
+              id: finalPayload.address,
+              walletAddress: finalPayload.address,
+              ...userInfo,
+            };
+          }
+        } catch (error) {
+          console.error('❌ Backend registration error:', error);
+          // Fallback to wallet address as ID
+          return {
+            id: finalPayload.address,
+            walletAddress: finalPayload.address,
+            ...userInfo,
+          };
+        }
       },
     }),
   ],
@@ -86,7 +129,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session: async ({ session, token }) => {
       if (token.userId) {
         session.user.id = token.userId as string;
-        session.user.walletAddress = token.address as string;
+        session.user.walletAddress = token.walletAddress as string;
         session.user.username = token.username as string;
         session.user.profilePictureUrl = token.profilePictureUrl as string;
       }
