@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Session } from 'next-auth';
 import { FixedHeader } from '../ui/FixedHeader';
@@ -39,7 +39,6 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
   const [conversationStarted, setConversationStarted] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -122,6 +121,60 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
     }
   ];
 
+  const nextQuestion = useCallback(() => {
+    let nextIndex = currentQuestionIndex + 1;
+    
+    // Skip the sex question since it's handled directly in date selection
+    if (nextIndex < onboardingQuestions.length && onboardingQuestions[nextIndex].id === 'sex') {
+      nextIndex++; // Skip to the question after sex
+    }
+    
+    if (nextIndex < onboardingQuestions.length) {
+      setCurrentQuestionIndex(nextIndex);
+      const nextQuestion = onboardingQuestions[nextIndex];
+      
+      if (nextQuestion.isBotMessage) {
+        const botMsg: ChatMessage = {
+          id: `msg-${Date.now()}-bot`,
+          content: nextQuestion.content,
+          isFromBot: true,
+          timestamp: new Date(),
+          showContinueButton: nextQuestion.id === 'completion'
+        };
+        setMessages(prev => [...prev, botMsg]);
+      } else {
+        // Add bot message with interactive elements for user questions
+        const botMsg: ChatMessage = {
+          id: `msg-${Date.now()}-bot`,
+          content: nextQuestion.content,
+          isFromBot: true,
+          timestamp: new Date(),
+          questionType: nextQuestion.questionType,
+          options: nextQuestion.options,
+          dataKey: nextQuestion.dataKey,
+          showInteractiveElements: true
+        };
+        setMessages(prev => [...prev, botMsg]);
+      }
+    }
+  }, [currentQuestionIndex, onboardingQuestions]);
+
+  const startConversation = useCallback(() => {
+    setConversationStarted(true);
+    const welcomeMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      content: onboardingQuestions[0].content,
+      isFromBot: true,
+      timestamp: new Date()
+    };
+    setMessages([welcomeMessage]);
+
+    // Automatically move to date of birth question after welcome message
+    setTimeout(() => {
+      nextQuestion();
+    }, 2000); // Wait 2 seconds before showing the date question
+  }, [onboardingQuestions, nextQuestion]);
+
   // Check if user has already completed onboarding
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -181,28 +234,12 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
     if (!conversationStarted && session?.user?.id) {
       startConversation();
     }
-  }, [conversationStarted, session]);
+  }, [conversationStarted, session, startConversation]);
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  const startConversation = () => {
-    setConversationStarted(true);
-    const welcomeMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      content: onboardingQuestions[0].content,
-      isFromBot: true,
-      timestamp: new Date()
-    };
-    setMessages([welcomeMessage]);
-    
-    // Automatically move to date of birth question after welcome message
-    setTimeout(() => {
-      nextQuestion();
-    }, 2000); // Wait 2 seconds before showing the date question
-  };
 
   const handleTextSubmit = async (userMessage: string) => {
     if (!userMessage.trim() || isLoading) return;
@@ -358,46 +395,6 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
     }, 500);
   };
 
-  const nextQuestion = () => {
-    let nextIndex = currentQuestionIndex + 1;
-    
-    // Skip the sex question since it's handled directly in date selection
-    if (nextIndex < onboardingQuestions.length && onboardingQuestions[nextIndex].id === 'sex') {
-      nextIndex++; // Skip to the question after sex
-    }
-    
-    if (nextIndex < onboardingQuestions.length) {
-      setCurrentQuestionIndex(nextIndex);
-      const nextQuestion = onboardingQuestions[nextIndex];
-      
-      if (nextQuestion.isBotMessage) {
-        const botMsg: ChatMessage = {
-          id: `msg-${Date.now()}-bot`,
-          content: nextQuestion.content,
-          isFromBot: true,
-          timestamp: new Date(),
-          showContinueButton: nextQuestion.id === 'completion'
-        };
-        setMessages(prev => [...prev, botMsg]);
-      } else {
-        // Add bot message with interactive elements for user questions
-        const botMsg: ChatMessage = {
-          id: `msg-${Date.now()}-bot`,
-          content: nextQuestion.content,
-          isFromBot: true,
-          timestamp: new Date(),
-          questionType: nextQuestion.questionType,
-          options: nextQuestion.options,
-          dataKey: nextQuestion.dataKey,
-          showInteractiveElements: true
-        };
-        setMessages(prev => [...prev, botMsg]);
-      }
-    } else {
-      setIsCompleted(true);
-    }
-  };
-
   const handleFinalSubmit = async () => {
     console.log('🎯 Continue button clicked! Starting handleFinalSubmit...');
     
@@ -490,9 +487,6 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
 
   const currentQuestion = onboardingQuestions[currentQuestionIndex];
   const showTextInput = currentQuestion?.questionType === 'text' && currentQuestion.id !== 'completion';
-  const showDateInput = currentQuestion?.questionType === 'date';
-  const showSelectOptions = currentQuestion?.questionType === 'select';
-  const showChipOptions = currentQuestion?.questionType === 'chips';
 
   // Show loading screen while checking onboarding status
   if (isCheckingStatus) {
@@ -676,3 +670,4 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
     </div>
   );
 }
+
