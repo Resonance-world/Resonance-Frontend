@@ -32,6 +32,13 @@ export interface UserProfile {
   motivationForConnection: string | null;
   currentCuriosity: string | null;
   personalitySummary: string | null;
+  telegramHandle: string | null;
+  instagramHandle: string | null;
+  baseFarcasterHandle: string | null;
+  zoraHandle: string | null;
+  linkedinHandle: string | null;
+  xHandle: string | null;
+  websiteUrl: string | null;
   annoyIndexPosition: number | null;
   essenceEmbeddingUpdatedAt: string | null;
   createdAt: string;
@@ -46,6 +53,13 @@ export interface UpdateProfileData {
   locationCity?: string;
   locationLat?: number;
   locationLng?: number;
+  telegramHandle?: string;
+  instagramHandle?: string;
+  baseFarcasterHandle?: string;
+  zoraHandle?: string;
+  linkedinHandle?: string;
+  xHandle?: string;
+  websiteUrl?: string;
 }
 
 export interface UserSearchResult {

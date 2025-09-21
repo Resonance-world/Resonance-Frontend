@@ -41,6 +41,15 @@ export const ProfileCard = ({ profile, onClick, isDragging }: ProfileCardProps) 
     }
   };
 
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    // Navigate to public garden on double click
+    if (!isDragging && !isSortableDragging) {
+      e.preventDefault();
+      console.log('👆👆 Profile card double-clicked, navigating to public garden:', profile.name);
+      window.location.href = `/garden/their-public/${profile.name.toLowerCase()}`;
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -52,6 +61,7 @@ export const ProfileCard = ({ profile, onClick, isDragging }: ProfileCardProps) 
         ${isDragging || isSortableDragging ? 'opacity-50 scale-105 z-50' : ''}
       `}
       onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
     >
       {/* Profile Image Container */}
       <div className="relative mb-2">

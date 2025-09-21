@@ -14,7 +14,8 @@ export interface SocialLinks {
   telegram?: string;
   instagram?: string;
   baseFarcaster?: string;
-  sora?: string;
+  zora?: string;
+  linkedin?: string;
   x?: string;
   website?: string;
 }
@@ -31,10 +32,11 @@ export const MOCK_USER_PROFILE: GardenProfile = {
   worldId: '@amarakhan',
   socialLinks: {
     telegram: 'tessla',
-    instagram: 'tessarwett',
+    instagram: 'tessaractt_',
     baseFarcaster: 'tessla.farcaster.eth',
-    sora: 'tessract',
-    x: 'tesslaax0',
+    zora: 'tessaract',
+    linkedin: 'tessla',
+    x: 'tesslaoxo',
     website: 'www.tessla.me'
   }
 };
