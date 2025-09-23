@@ -2,8 +2,10 @@
 import { MiniKitProvider } from '@worldcoin/minikit-js/minikit-provider';
 import { Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
+import { queryClient } from '@/api/queryClient';
 
 const ErudaProvider = dynamic(
   () => import('@/providers/Eruda').then((c) => c.ErudaProvider),
@@ -35,10 +37,12 @@ export default function ClientProviders({
   console.log('🏗️ Initializing ClientProviders with MiniKit...');
   
   return (
-    <ErudaProvider>
-      <MiniKitProvider>
-        <SessionProvider session={session}>{children}</SessionProvider>
-      </MiniKitProvider>
-    </ErudaProvider>
+    <QueryClientProvider client={queryClient}>
+      <ErudaProvider>
+        <MiniKitProvider>
+          <SessionProvider session={session}>{children}</SessionProvider>
+        </MiniKitProvider>
+      </ErudaProvider>
+    </QueryClientProvider>
   );
 }

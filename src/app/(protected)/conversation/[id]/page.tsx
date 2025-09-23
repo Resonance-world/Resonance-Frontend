@@ -1,6 +1,7 @@
 import { ConversationChat } from '@/components/conversation/ConversationChat';
 import { fetchUserProfile } from '@/services/circlesService';
 
+
 interface ConversationPageProps {
   params: Promise<{
     id: string;
@@ -13,7 +14,7 @@ interface ConversationPageProps {
  */
 export default async function ConversationPage({ params }: ConversationPageProps) {
   const { id } = await params;
-  
+
   let participantData = {
     id: id,
     name: id === 'profile-tessa' ? 'Tessa' : id,
@@ -39,10 +40,9 @@ export default async function ConversationPage({ params }: ConversationPageProps
     <ConversationChat 
       conversationId={id}
       participantName={participantData.name}
-      participantId={participantData.id}
+      participantId={id}
       participantProfilePicture={participantData.profilePicture}
       conversationPrompt="Computer mind vs Human mind?"
-      currentUserId="user-1"
     />
   );
 } 

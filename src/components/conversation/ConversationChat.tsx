@@ -3,6 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ConversationMessage, MOCK_MESSAGES } from '@/types/conversation';
+import {useUser} from "@/hooks/useUser";
+import {useGetMessagesByConversation} from "@/api/messages/getMessagesByUser/useGetMessagesByConversation";
+import {useWriteMessage} from "@/api/messages/writeMessage/useWriteMessage";
+import { io, Socket } from 'socket.io-client';
 
 interface ConversationChatProps {
   conversationId: string;
@@ -10,7 +14,6 @@ interface ConversationChatProps {
   participantId: string;
   participantProfilePicture?: string;
   conversationPrompt: string;
-  currentUserId: string;
 }
 
 /**
@@ -23,28 +26,68 @@ export const ConversationChat = ({
   participantId,
   participantProfilePicture,
   conversationPrompt,
-  currentUserId 
+  
 }: ConversationChatProps) => {
-  // Only show mockup messages for Tessa, real users start with empty conversations
-  const [messages, setMessages] = useState<ConversationMessage[]>(
-    participantId === 'profile-tessa' ? MOCK_MESSAGES : []
-  );
+  const [messages, setMessages] = useState<ConversationMessage[]>(MOCK_MESSAGES);
   const [newMessage, setNewMessage] = useState('');
   const [showRating, setShowRating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { user: userData, loading: userLoading, updateUser } = useUser();
 
-  console.log('💬 Conversation Chat initialized for:', conversationId);
+  const currentUserId = userData?.id || " ";
+  const { data: conversationMessages, isFetching, error, refetch } = useGetMessagesByConversation(participantId, currentUserId);
+  console.log('current user ID:', currentUserId);
+  console.log('💬 Conversation Chat initialized for user:', participantId);
+  const mutation = useWriteMessage();
+
+  useEffect(() => {
+    const newSocket = io(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050', {
+      query: {
+        userId: currentUserId
+      }
+    });
+
+    newSocket.on('connect', () => {
+      console.log('🔌 Connected to WebSocket server');
+      setIsConnected(true);
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('🔌 Disconnected from WebSocket server');
+      setIsConnected(false);
+    });
+
+    newSocket.on('reply', (data) => {
+      console.log('📨 Received reply:', data);
+    });
+
+    // Listen for new messages
+    newSocket.on('newMessage', (message: ConversationMessage) => {
+      console.log('📨 Received new message:', message);
+      // Refetch messages to update the UI
+      refetch();
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [currentUserId, refetch]);
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
+  console.log(conversationMessages, "messages");
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
+  
   const handleSendMessage = async () => {
     if (!newMessage.trim() || isSubmitting) return;
     
@@ -59,17 +102,22 @@ export const ConversationChat = ({
       timestamp: new Date(),
       type: 'text'
     };
-    
+
+    socket?.emit('wsMessage', {
+      content: newMessage.trim(),
+      receiverId: participantId,
+    });
+
     setMessages(prev => [...prev, message]);
     setNewMessage('');
-    
+
     try {
-      // TODO: Send message to backend
-      // await sendMessage(conversationId, message);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      mutation.mutate({
+        receiverId: participantId,
+        content: newMessage.trim(),
+        userId: currentUserId
+      });
+
       console.log('✅ Message sent successfully');
     } catch (error) {
       console.error('❌ Failed to send message:', error);
@@ -91,7 +139,7 @@ export const ConversationChat = ({
       // await rateConversation(conversationId, rating);
       
       // Navigate to reflection
-      router.push(`/conversation/${conversationId}/reflection`);
+      router.push(`/conversation/${userId}/reflection`);
     } catch (error) {
       console.error('❌ Failed to submit rating:', error);
     }
@@ -100,6 +148,10 @@ export const ConversationChat = ({
   const handleBack = () => {
     router.back();
   };
+
+  if (isFetching || userLoading){
+    return "Fetching data...";
+  }
 
   if (showRating) {
     return (
@@ -233,21 +285,21 @@ export const ConversationChat = ({
 
       {/* Messages */}
       <div className="relative z-10 flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
-          >
+        {conversationMessages?.toReversed().map((message) => (
             <div
-              className={`max-w-[80%] p-3 rounded-lg backdrop-blur-sm border ${
-                message.senderId === currentUserId
-                  ? 'bg-amber-600/80 text-white border-amber-500/50'
-                  : 'bg-white/10 text-white border-white/20'
-              }`}
+                key={message.id}
+                className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
             >
-              <p className="text-sm leading-relaxed">{message.content}</p>
+              <div
+                  className={`max-w-[80%] p-3 rounded-lg backdrop-blur-sm border ${
+                      message.senderId === currentUserId
+                          ? 'bg-amber-600/80 text-white border-amber-500/50'
+                          : 'bg-white/10 text-white border-white/20'
+                  }`}
+              >
+                <p className="text-sm leading-relaxed">{message.content}</p>
+              </div>
             </div>
-          </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
@@ -288,4 +340,4 @@ export const ConversationChat = ({
       </div>
     </div>
   );
-}; 
+};

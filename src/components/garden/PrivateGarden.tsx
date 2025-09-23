@@ -235,3 +235,5 @@ export const PrivateGarden = () => {
     </div>
   );
 }; 
+
+oints are already working for other pages 
