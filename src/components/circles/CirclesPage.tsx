@@ -4,18 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+
 import { Circle, MOCK_CIRCLES, CircleProfile } from '@/types/circles';
 import { ProfileCard } from './ProfileCard';
 import { fetchCircleProfiles } from '@/services/circlesService';
@@ -35,14 +28,6 @@ export const CirclesPage = () => {
   console.log('🎯 CirclesPage: Component rendered, initial circles:', circles);
   console.log('🎯 CirclesPage: Current user session:', session?.user?.id);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    })
-  );
-
   // Fetch real users from backend and add them to circles
   useEffect(() => {
     console.log('🚀 CirclesPage: useEffect triggered - starting to load users');
@@ -60,7 +45,6 @@ export const CirclesPage = () => {
         // Update circles with real users (no mockup conversations)
         setCircles(prevCircles => {
           console.log('🔄 CirclesPage: Updating circles, current circles:', prevCircles);
-          
           const updatedCircles = prevCircles.map(circle => {
             if (circle.id === 'all') {
               // Only add real users to "All" circle (no Tessa mockup)
@@ -112,67 +96,6 @@ export const CirclesPage = () => {
 
   console.log('🎯 CirclesPage initialized with circles:', circles.length);
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    console.log('🚀 Drag started for profile:', active.id);
-    
-    // Find the profile being dragged
-    for (const circle of circles) {
-      const profile = circle.profiles.find(p => p.id === active.id);
-      if (profile) {
-        setActiveProfile(profile);
-        break;
-      }
-    }
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (!over) {
-      console.log('❌ Drop cancelled - no valid drop zone');
-      setActiveProfile(null);
-      return;
-    }
-
-    const profileId = active.id as string;
-    const targetCircleId = over.id as string;
-
-    console.log('🎯 Moving profile', profileId, 'to circle', targetCircleId);
-
-    setCircles(prevCircles => {
-      let profileToMove: CircleProfile | null = null;
-      
-      // Remove profile from source circle
-      const updatedCircles = prevCircles.map(circle => ({
-        ...circle,
-        profiles: circle.profiles.filter(profile => {
-          if (profile.id === profileId) {
-            profileToMove = profile;
-            return false;
-          }
-          return true;
-        })
-      }));
-
-      // Add profile to target circle
-      if (profileToMove) {
-        const finalCircles = updatedCircles.map(circle => 
-          circle.id === targetCircleId 
-            ? { ...circle, profiles: [...circle.profiles, profileToMove as CircleProfile] }
-            : circle
-        );
-        
-        console.log('✅ Profile moved successfully');
-        return finalCircles;
-      }
-
-      return updatedCircles;
-    });
-
-    setActiveProfile(null);
-  };
-
   const handleProfileClick = (profileId: string) => {
     console.log('🔗 Navigating to conversation:', profileId);
     router.push(`/conversation/${profileId}`);
@@ -184,11 +107,7 @@ export const CirclesPage = () => {
 
   return (
     <div className="resonance-dark min-h-screen flex flex-col" style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
-      <DndContext
-        sensors={sensors}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
+
         {/* Page Title */}
         <div className="p-4">
           <h1 className="text-white text-2xl font-bold">MY CIRCLES</h1>
@@ -231,23 +150,7 @@ export const CirclesPage = () => {
               </div>
             </div>
           ) : (
-            <SortableContext 
-              items={(() => {
-                const profiles = activeTab === 'all' 
-                  ? circles.flatMap(circle => circle.profiles)
-                  : filteredCircles.flatMap(circle => circle.profiles);
-                
-                // Remove duplicates and return IDs
-                const uniqueProfiles = profiles.filter((profile, index, self) => 
-                  index === self.findIndex(p => p.id === profile.id)
-                );
-                
-                return uniqueProfiles.map(p => p.id);
-              })()}
-              strategy={verticalListSortingStrategy}
-              id={activeTab}
-            >
-              <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
+          <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
                 {(() => {
                   const profiles = activeTab === 'all' 
                     ? circles.flatMap(circle => circle.profiles)
@@ -257,7 +160,6 @@ export const CirclesPage = () => {
                   const uniqueProfiles = profiles.filter((profile, index, self) => 
                     index === self.findIndex(p => p.id === profile.id)
                   );
-                  
                   return uniqueProfiles.map((profile, index) => (
                     <ProfileCard
                       key={`${profile.id}-${index}`}
@@ -267,23 +169,9 @@ export const CirclesPage = () => {
                     />
                   ));
                 })()}
-              </div>
-            </SortableContext>
+          </div>
           )}
         </div>
-
-        <DragOverlay>
-          {activeProfile ? (
-            <ProfileCard
-              key={`overlay-${activeProfile.id}`}
-              profile={activeProfile}
-              onClick={() => {}}
-              isDragging={true}
-            />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
-
     </div>
   );
 }; 
