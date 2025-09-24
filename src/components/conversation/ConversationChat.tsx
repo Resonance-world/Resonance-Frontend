@@ -7,12 +7,10 @@ import {useUser} from "@/hooks/useUser";
 import {useGetMessagesByConversation} from "@/api/messages/getMessagesByUser/useGetMessagesByConversation";
 import {useWriteMessage} from "@/api/messages/writeMessage/useWriteMessage";
 import { io, Socket } from 'socket.io-client';
+import { useGetUserById } from '@/api/user/useGetUserById/useGetUserById';
 
 interface ConversationChatProps {
-  conversationId: string;
-  participantName: string;
   participantId: string;
-  participantProfilePicture?: string;
   conversationPrompt: string;
 }
 
@@ -20,14 +18,13 @@ interface ConversationChatProps {
  * ConversationChat - Main chat interface with conversation rating
  * Implements the conversation screen from Figma wireframes
  */
-export const ConversationChat = ({ 
-  conversationId, 
-  participantName, 
+export const ConversationChat = ({
   participantId,
-  participantProfilePicture,
   conversationPrompt,
-  
+
 }: ConversationChatProps) => {
+  const { data: chatUser, isFetching, error } = useGetUserById(participantId);
+
   const [messages, setMessages] = useState<ConversationMessage[]>(MOCK_MESSAGES);
   const [newMessage, setNewMessage] = useState('');
   const [showRating, setShowRating] = useState(false);
@@ -38,12 +35,18 @@ export const ConversationChat = ({
   const router = useRouter();
   const { user: userData, loading: userLoading, updateUser } = useUser();
 
-  const currentUserId = userData?.id || " ";
-  const { data: conversationMessages, isFetching, error, refetch } = useGetMessagesByConversation(participantId, currentUserId);
-  console.log('current user ID:', currentUserId);
+  const currentUserId = userData?.id;
+  const { data: conversationMessages, isFetching: isFetchingConvMessages, error: convMessagesError, refetch } = useGetMessagesByConversation(participantId, currentUserId);
   console.log('💬 Conversation Chat initialized for user:', participantId);
-  const mutation = useWriteMessage();
-
+  const mutation = useWriteMessage(refetch);
+  const participantData = {
+    id: chatUser?.user?.id,
+    name: chatUser?.user?.name || chatUser?.user?.username,
+    profilePicture: chatUser?.user?.profilePictureUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
+  }
+  const participantName = participantData?.name;
+  const participantProfilePicture = participantData.profilePicture
+  
   useEffect(() => {
     const newSocket = io(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050', {
       query: {
@@ -83,20 +86,19 @@ export const ConversationChat = ({
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  console.log(conversationMessages, "messages");
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || isSubmitting) return;
-    
+
     setIsSubmitting(true);
     console.log('📤 Sending message:', newMessage);
-    
+
     const message: ConversationMessage = {
       id: Date.now().toString(),
-      senderId: currentUserId,
+      senderId: currentUserId!,
       senderName: 'You',
       content: newMessage.trim(),
       timestamp: new Date(),
@@ -115,7 +117,7 @@ export const ConversationChat = ({
       mutation.mutate({
         receiverId: participantId,
         content: newMessage.trim(),
-        userId: currentUserId
+        userId: currentUserId!
       });
 
       console.log('✅ Message sent successfully');
@@ -133,13 +135,13 @@ export const ConversationChat = ({
 
   const handleRating = async (rating: 'awesome' | 'good' | 'okay' | 'meh') => {
     console.log('📊 Rating conversation:', rating);
-    
+
     try {
       // TODO: Submit rating to backend
       // await rateConversation(conversationId, rating);
-      
+
       // Navigate to reflection
-      router.push(`/conversation/${userId}/reflection`);
+      router.push(`/conversation/${participantId}/reflection`);
     } catch (error) {
       console.error('❌ Failed to submit rating:', error);
     }
@@ -149,16 +151,19 @@ export const ConversationChat = ({
     router.back();
   };
 
-  if (isFetching || userLoading){
+  if (isFetching || isFetchingConvMessages || userLoading || !currentUserId){
     return "Fetching data...";
   }
+  console.log(conversationMessages, "messages");
+  console.log('chat User data logs:', chatUser);
+
 
   if (showRating) {
     return (
       <div className="innerview-dark min-h-screen flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <button 
+          <button
             onClick={() => setShowRating(false)}
             className="text-white/60 hover:text-white"
           >
@@ -166,9 +171,9 @@ export const ConversationChat = ({
               <path d="M19 12H5m7-7l-7 7 7 7"/>
             </svg>
           </button>
-          
+
           <h1 className="text-white font-medium">Rate Conversation</h1>
-          
+
           <div className="w-6"></div>
         </div>
 
@@ -191,7 +196,7 @@ export const ConversationChat = ({
                 <span>Awesome</span>
               </div>
             </button>
-            
+
             <button
               onClick={() => handleRating('good')}
               className="innerview-button w-full py-4 text-left"
@@ -201,7 +206,7 @@ export const ConversationChat = ({
                 <span>Good</span>
               </div>
             </button>
-            
+
             <button
               onClick={() => handleRating('okay')}
               className="innerview-button w-full py-4 text-left"
@@ -211,7 +216,7 @@ export const ConversationChat = ({
                 <span>Okay</span>
               </div>
             </button>
-            
+
             <button
               onClick={() => handleRating('meh')}
               className="innerview-button w-full py-4 text-left"
@@ -230,7 +235,7 @@ export const ConversationChat = ({
   return (
     <div className="relative min-h-screen flex flex-col">
       {/* Background Image */}
-      <div 
+      <div
         className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: 'url(/center_piece.png)',
@@ -238,10 +243,10 @@ export const ConversationChat = ({
         }}
       />
       <div className="fixed inset-0 bg-black/40" />
-      
+
       {/* Header */}
       <div className="relative z-50 flex items-center justify-between p-4 border-b border-white/20 backdrop-blur-sm">
-        <button 
+        <button
           onClick={handleBack}
           className="text-white/60 hover:text-white transition-colors"
         >
@@ -249,8 +254,8 @@ export const ConversationChat = ({
             <path d="M19 12H5m7-7l-7 7 7 7"/>
           </svg>
         </button>
-        
-        <button 
+
+        <button
           onClick={() => {
             console.log('🔗 Navigating to TheirPublicGarden for:', participantName, 'ID:', participantId);
             window.location.href = `/garden/their-public/${participantId}`;
@@ -258,8 +263,8 @@ export const ConversationChat = ({
           className="flex items-center gap-3 hover:bg-white/5 rounded-lg px-3 py-2 transition-colors"
         >
           {participantProfilePicture ? (
-            <img 
-              src={participantProfilePicture} 
+            <img
+              src={participantProfilePicture}
               alt={participantName}
               className="w-8 h-8 rounded-full object-cover"
             />
@@ -270,7 +275,7 @@ export const ConversationChat = ({
           )}
           <span className="text-white font-medium">{participantName}</span>
         </button>
-        
+
         {/* Empty div to balance the layout */}
         <div className="w-6"></div>
       </div>
@@ -285,7 +290,7 @@ export const ConversationChat = ({
 
       {/* Messages */}
       <div className="relative z-10 flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
-        {conversationMessages?.toReversed().map((message) => (
+        {conversationMessages?.toReversed().map((message: ConversationMessage) => (
             <div
                 key={message.id}
                 className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}

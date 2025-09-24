@@ -11,9 +11,12 @@ export const useGetMessagesByConversation = (id: string, userId?: string) => {
         queryFn: async () => {
             console.log('🔍 queryFn executing - fetching from:', `${apiUrl}/api/messages/get-conv-messages/${id}?userId=${userId}`);
             try {
-                const response = await fetch(`${apiUrl}/api/messages/get-conv-messages/${id}?userId=${userId}`);
+                const response = await fetch(`${apiUrl}/api/messages/get-conv-messages/${id}?userId=${userId}`, {
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
                 console.log('🔍 Response status:', response.status);
-                console.log('🔍 Response ok:', response.ok);
                 const data = await response.json();
                 console.log('🔍 Response data:', data);
                 return data;

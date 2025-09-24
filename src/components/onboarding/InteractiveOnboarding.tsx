@@ -397,6 +397,9 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
 
   const handleFinalSubmit = async () => {
     console.log('🎯 Continue button clicked! Starting handleFinalSubmit...');
+    console.log('🔍 Session data:', session);
+    console.log('🔍 User ID from session:', session?.user?.id);
+    console.log('🔍 Onboarding data:', onboardingData);
     
     if (!session?.user?.id) {
       console.log('⚠️ No authenticated user, cannot save onboarding data');
@@ -418,21 +421,27 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
       console.log('🔗 Backend URL:', backendUrl);
       console.log('🌍 Environment variable NEXT_PUBLIC_BACKEND_URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
       
+      const requestBody = {
+        userId: session.user.id,
+        onboardingData: onboardingData,
+        personalitySummary: personalitySummary
+      };
+      
+      console.log('📤 Request body:', requestBody);
+      console.log('📤 About to make fetch request...');
+      
       const response = await fetch(backendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
         },
-        body: JSON.stringify({
-          userId: session.user.id,
-          onboardingData: onboardingData,
-          personalitySummary: personalitySummary
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       console.log('📡 Backend response status:', response.status);
       console.log('📡 Backend response ok:', response.ok);
+      console.log('📡 Backend response headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
         const result = await response.json();
@@ -440,12 +449,24 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
         console.log('🚀 Redirecting to gift page...');
         router.push('/onboarding/gift');
       } else {
-        const error = await response.json();
+        const errorText = await response.text();
+        console.error('❌ Failed to save onboarding data - Response text:', errorText);
+        let error;
+        try {
+          error = JSON.parse(errorText);
+        } catch {
+          error = { error: errorText };
+        }
         console.error('❌ Failed to save onboarding data:', error);
         alert(`Failed to save onboarding data: ${error.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('❌ Error saving onboarding data:', error);
+      console.error('❌ Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
       alert(`Error saving onboarding data: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
