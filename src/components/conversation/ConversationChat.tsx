@@ -48,10 +48,25 @@ export const ConversationChat = ({
   const participantProfilePicture = participantData.profilePicture
   
   useEffect(() => {
-    const newSocket = io(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050', {
+    if (!currentUserId) {
+      console.log('🔌 No currentUserId, skipping WebSocket connection');
+      return;
+    }
+
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+    console.log('🔌 Attempting WebSocket connection to:', backendUrl);
+    console.log('🔌 With userId:', currentUserId);
+
+    const newSocket = io(backendUrl, {
       query: {
         userId: currentUserId
-      }
+      },
+      transports: ['websocket', 'polling'],
+      timeout: 20000,
+      forceNew: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     });
 
     newSocket.on('connect', () => {
@@ -59,8 +74,12 @@ export const ConversationChat = ({
       setIsConnected(true);
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('🔌 Disconnected from WebSocket server');
+    newSocket.on('connect_error', (error) => {
+      console.error('🔌 WebSocket connection error:', error);
+    });
+
+    newSocket.on('disconnect', (reason) => {
+      console.log('🔌 Disconnected from WebSocket server, reason:', reason);
       setIsConnected(false);
     });
 
@@ -78,6 +97,7 @@ export const ConversationChat = ({
     setSocket(newSocket);
 
     return () => {
+      console.log('🔌 Cleaning up WebSocket connection');
       newSocket.disconnect();
     };
   }, [currentUserId, refetch]);
