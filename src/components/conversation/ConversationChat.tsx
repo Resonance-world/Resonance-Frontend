@@ -37,16 +37,8 @@ export const ConversationChat = ({
 
   const currentUserId = userData?.id;
   const { data: conversationMessages, isFetching: isFetchingConvMessages, error: convMessagesError, refetch } = useGetMessagesByConversation(participantId, currentUserId);
-  console.log('💬 Conversation Chat initialized for user:', participantId);
   const mutation = useWriteMessage(refetch);
-  const participantData = {
-    id: chatUser?.user?.id,
-    name: chatUser?.user?.name || chatUser?.user?.username,
-    profilePicture: chatUser?.user?.profilePictureUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face'
-  }
-  const participantName = participantData?.name;
-  const participantProfilePicture = participantData.profilePicture
-  
+
   useEffect(() => {
     if (!currentUserId) {
       console.log('🔌 No currentUserId, skipping WebSocket connection');
@@ -54,9 +46,6 @@ export const ConversationChat = ({
     }
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
-    console.log('🔌 Attempting WebSocket connection to:', backendUrl);
-    console.log('🔌 With userId:', currentUserId);
-
     const newSocket = io(backendUrl, {
       query: {
         userId: currentUserId
@@ -101,7 +90,6 @@ export const ConversationChat = ({
       newSocket.disconnect();
     };
   }, [currentUserId, refetch]);
-
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -277,23 +265,24 @@ export const ConversationChat = ({
 
         <button
           onClick={() => {
-            console.log('🔗 Navigating to TheirPublicGarden for:', participantName, 'ID:', participantId);
             window.location.href = `/garden/their-public/${participantId}`;
           }}
           className="flex items-center gap-3 hover:bg-white/5 rounded-lg px-3 py-2 transition-colors"
         >
-          {participantProfilePicture ? (
+          {chatUser?.user?.profilePictureUrl ? (
             <img
-              src={participantProfilePicture}
-              alt={participantName}
+              src={chatUser?.user?.profilePictureUrl}
+              alt={chatUser?.user?.name || chatUser?.user?.username}
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
-            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-bold">{participantName[0]}</span>
-            </div>
+            <img
+              src="/profilePictureDefault-2.png"
+              alt={chatUser?.user?.name || chatUser?.user?.username}
+              className="w-8 h-8 rounded-full object-cover"
+            />
           )}
-          <span className="text-white font-medium">{participantName}</span>
+          <span className="text-white font-medium">{chatUser?.user?.name || chatUser?.user?.username}</span>
         </button>
 
         {/* Empty div to balance the layout */}
