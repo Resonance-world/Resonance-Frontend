@@ -147,7 +147,7 @@ export const SocialLinksEditor = () => {
         <div className="mt-6">
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
             <p className="text-white/70 text-sm">
-              💡 Your social links help others connect with you outside of InnerView. 
+              💡 Your social links help others connect with you outside of Resonance. 
               Only add platforms you&apos;re comfortable sharing publicly.
             </p>
           </div>
