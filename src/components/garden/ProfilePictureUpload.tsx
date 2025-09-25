@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import Image from 'next/image';
+import { useState, useRef, useEffect } from 'react';
 
 interface ProfilePictureUploadProps {
   currentImage: string;
@@ -9,20 +8,40 @@ interface ProfilePictureUploadProps {
 }
 
 /**
+ * Convert file to base64 data URL
+ */
+const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+/**
  * ProfilePictureUpload - Upload and crop profile pictures
  * Allows users to upload new profile images
  */
 export const ProfilePictureUpload = ({ currentImage, onImageChange }: ProfilePictureUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   console.log('📸 Profile Picture Upload component initialized');
+  console.log('📸 Current image source:', currentImage.substring(0, 100) + '...');
+  console.log('📸 Current image type:', currentImage.startsWith('data:') ? 'base64' : currentImage.startsWith('blob:') ? 'blob' : 'url');
+
+  // Reset image error state when currentImage changes
+  useEffect(() => {
+    setImageError(false);
+  }, [currentImage]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    console.log('📁 File selected:', file.name, file.size);
+    console.log('📁 File selected:', file.name, file.size, file.type);
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -30,9 +49,9 @@ export const ProfilePictureUpload = ({ currentImage, onImageChange }: ProfilePic
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image must be smaller than 5MB');
+    // Validate file size (max 2MB for base64 storage)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image must be smaller than 2MB for storage');
       return;
     }
 
@@ -42,13 +61,16 @@ export const ProfilePictureUpload = ({ currentImage, onImageChange }: ProfilePic
       // Create a local URL for immediate preview
       const localUrl = URL.createObjectURL(file);
       
-      // TODO: Upload to cloud storage
-      // const uploadedUrl = await uploadToCloudStorage(file);
+      // Convert image to base64 for storage in database
+      const base64Url = await convertFileToBase64(file);
       
-      // For now, use the local URL
-      onImageChange(localUrl);
+      console.log('🔄 Base64 conversion complete, length:', base64Url.length);
+      console.log('🔄 Base64 preview:', base64Url.substring(0, 100) + '...');
       
-      console.log('✅ Profile picture updated');
+      // Use base64 URL for permanent storage
+      onImageChange(base64Url);
+      
+      console.log('✅ Profile picture updated and converted to base64');
     } catch (error) {
       console.error('❌ Failed to upload image:', error);
       alert('Failed to upload image. Please try again.');
@@ -71,20 +93,37 @@ export const ProfilePictureUpload = ({ currentImage, onImageChange }: ProfilePic
       {/* Current Image */}
       <div className="relative w-full max-w-sm mx-auto">
         <div className="aspect-square rounded-lg overflow-hidden">
-          <Image
+          <img
             src={currentImage}
             alt="Profile picture"
-            width={400}
-            height={400}
             className={`w-full h-full object-cover transition-opacity ${
               isUploading ? 'opacity-50' : 'opacity-100'
             }`}
+            onError={(e) => {
+              console.error('❌ Image load error:', e);
+              console.error('❌ Failed image src:', currentImage.substring(0, 100) + '...');
+              setImageError(true);
+            }}
+            onLoad={() => {
+              console.log('✅ Image loaded successfully');
+              setImageError(false);
+            }}
           />
           
           {/* Loading overlay */}
           {isUploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
               <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+          
+          {/* Error fallback */}
+          {imageError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+              <div className="text-center text-white">
+                <div className="text-4xl mb-2">📷</div>
+                <div className="text-sm">Image failed to load</div>
+              </div>
             </div>
           )}
         </div>
@@ -119,7 +158,7 @@ export const ProfilePictureUpload = ({ currentImage, onImageChange }: ProfilePic
       {/* Upload instructions */}
       <div className="mt-4 text-center">
         <p className="text-gray-400 text-xs">
-          📸 Upload a square image for best results (max 5MB)
+          📸 Upload a square image for best results (max 2MB)
         </p>
       </div>
     </div>

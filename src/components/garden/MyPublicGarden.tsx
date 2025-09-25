@@ -12,9 +12,11 @@ import { useUser } from '@/hooks/useUser';
  */
 export const MyPublicGarden = () => {
   const [profile, setProfile] = useState<GardenProfile>(MOCK_USER_PROFILE);
+  const [isEditingWhy, setIsEditingWhy] = useState(false);
+  const [whyText, setWhyText] = useState('');
   const router = useRouter();
   const { data: session } = useSession();
-  const { user: userData, loading: userLoading } = useUser();
+  const { user: userData, loading: userLoading, updateUser, refreshUser } = useUser();
 
   // Update profile with real user data when available
   useEffect(() => {
@@ -25,9 +27,10 @@ export const MyPublicGarden = () => {
         name: userData.name || userData.username || prev.name,
         worldId: userData.username ? `@${userData.username}` : prev.worldId,
         profileImage: userData.profilePictureUrl || prev.profileImage,
-        bio: userData.personalitySummary || prev.bio,
+        bio: userData.userWhy || userData.personalitySummary || prev.bio,
         essence: userData.essenceKeywords ? [userData.essenceKeywords] : prev.essence
       }));
+      setWhyText(userData.userWhy || userData.personalitySummary || '');
     } else if (session?.user) {
       console.log('🔄 Updating public profile with World ID data:', session.user);
       setProfile(prev => ({
@@ -47,6 +50,32 @@ export const MyPublicGarden = () => {
   const handleMyReflection = () => {
     console.log('📅 Navigating to my reflections');
     router.push('/garden/reflections');
+  };
+
+  const handleEditWhy = () => {
+    setIsEditingWhy(true);
+  };
+
+  const handleSaveWhy = async () => {
+    if (!session?.user?.id) return;
+    
+    try {
+      await updateUser({ userWhy: whyText });
+      
+      // Refresh user data to get the latest information
+      await refreshUser();
+      
+      setProfile(prev => ({ ...prev, bio: whyText }));
+      setIsEditingWhy(false);
+      console.log('✅ Why section updated successfully');
+    } catch (error) {
+      console.error('❌ Error updating why section:', error);
+    }
+  };
+
+  const handleCancelEditWhy = () => {
+    setWhyText(userData?.userWhy || userData?.personalitySummary || '');
+    setIsEditingWhy(false);
   };
 
   if (userLoading) {
@@ -92,16 +121,10 @@ export const MyPublicGarden = () => {
         <div className="mb-6">
           <div className="relative">
             <img
-              src={profile.nftImage}
+              src={userData?.profilePictureUrl || session?.user?.profilePictureUrl || '/profilePictureDefault-2.png'}
               alt={`${profile.name}'s garden`}
               className="w-full h-64 object-cover rounded-lg"
             />
-            <button
-              onClick={handleEditProfile}
-              className="absolute bottom-4 right-4 bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm hover:bg-white/30 transition-colors"
-            >
-              Set new photo
-            </button>
           </div>
         </div>
 
@@ -129,19 +152,47 @@ export const MyPublicGarden = () => {
 
         {/* My Why Section */}
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-6 border border-white/20">
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center justify-between mb-3">
             <h3 className="text-white font-medium">MY WHY</h3>
+            {!isEditingWhy && (
+              <button
+                onClick={handleEditWhy}
+                className="text-green-400 text-sm hover:text-green-300"
+              >
+                Edit
+              </button>
+            )}
           </div>
           <div>
-            <p className="text-white text-sm leading-relaxed mb-3">
-              {profile.bio || 'Add your personal mission or what drives you...'}
-            </p>
-            <button
-              onClick={handleEditProfile}
-              className="text-green-400 text-sm hover:text-green-300"
-            >
-              Edit
-            </button>
+            {isEditingWhy ? (
+              <div className="space-y-3">
+                <textarea
+                  value={whyText}
+                  onChange={(e) => setWhyText(e.target.value)}
+                  placeholder="Add your personal mission or what drives you..."
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:border-green-400 transition-colors resize-none"
+                  rows={4}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSaveWhy}
+                    className="bg-green-400 text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-300 transition-colors"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancelEditWhy}
+                    className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-white text-sm leading-relaxed">
+                {profile.bio || 'Add your personal mission or what drives you...'}
+              </p>
+            )}
           </div>
         </div>
 
@@ -152,7 +203,7 @@ export const MyPublicGarden = () => {
             className="bg-white/10 backdrop-blur-sm rounded-lg p-4 w-full text-left border border-white/20 hover:bg-white/20 transition-colors"
           >
             <div className="flex items-center justify-between">
-              <span className="text-white font-medium">MY PROFILE</span>
+              <span className="text-white font-medium">MY PRIVATE GARDEN</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
                 <path d="M9 18l6-6-6-6"/>
               </svg>

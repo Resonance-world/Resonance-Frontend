@@ -19,8 +19,11 @@ export interface UserProfile {
   successfulConnections: number;
   name: string | null;
   dateOfBirth: string | null;
+  age: number | null;
   zodiacSign: string | null;
   sex: string | null;
+  privateProfilePictureUrl: string | null;
+  userWhy: string | null;
   locationCountry: string | null;
   locationCity: string | null;
   locationLat: number | null;
@@ -48,6 +51,7 @@ export interface UserProfile {
 export interface UpdateProfileData {
   username?: string;
   profilePictureUrl?: string;
+  privateProfilePictureUrl?: string;
   currentAvailability?: string;
   locationCountry?: string;
   locationCity?: string;
@@ -60,6 +64,13 @@ export interface UpdateProfileData {
   linkedinHandle?: string;
   xHandle?: string;
   websiteUrl?: string;
+  userWhy?: string;
+  name?: string;
+  dateOfBirth?: string;
+  sex?: string;
+  essenceKeywords?: string;
+  communicationTone?: string;
+  motivationForConnection?: string;
 }
 
 export interface UserSearchResult {

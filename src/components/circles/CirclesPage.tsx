@@ -65,7 +65,7 @@ export const CirclesPage = () => {
                 </div>
             </div> : <div className="flex-1 p-4 pb-24">
                 <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
-                    {circles.users.map((circle) => (
+                    {circles.users.filter(circle => circle.id !== session?.user?.id).map((circle) => (
                         <ProfileCard
                             key={circle.id}
                             profile={circle}

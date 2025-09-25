@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { ResonanceLogo } from './ResonanceLogo';
 
 /**
@@ -7,6 +8,12 @@ import { ResonanceLogo } from './ResonanceLogo';
  * Stays at the top when scrolling
  */
 export const FixedHeader = () => {
+  const router = useRouter();
+
+  const handleSettingsClick = () => {
+    router.push('/settings');
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 border-b" style={{
       backgroundColor: 'var(--resonance-dark-bg)',
@@ -14,8 +21,11 @@ export const FixedHeader = () => {
     }}>
       <ResonanceLogo size="sm" />
       
-      {/* Settings menu (3 dots) */}
-      <button className="text-white/60 hover:text-white transition-colors">
+      {/* Settings menu (3 lines) */}
+      <button 
+        onClick={handleSettingsClick}
+        className="text-white/60 hover:text-white transition-colors"
+      >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <line x1="3" y1="6" x2="21" y2="6"/>
           <line x1="3" y1="12" x2="21" y2="12"/>

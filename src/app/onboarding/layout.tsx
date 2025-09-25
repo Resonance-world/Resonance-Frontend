@@ -10,10 +10,8 @@ interface OnboardingLayoutProps {
  */
 export default function OnboardingLayout({ children }: OnboardingLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container-responsive py-8">
-        {children}
-      </div>
+    <div className="min-h-screen">
+      {children}
     </div>
   );
 } 
