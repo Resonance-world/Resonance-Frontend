@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Prompt } from '@/types/home';
 
 interface MyPromptProps {
@@ -15,9 +16,36 @@ interface MyPromptProps {
  */
 export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
   const [isSelecting, setIsSelecting] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
+  const [customPrompt, setCustomPrompt] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session } = useSession();
 
   console.log('📝 MyPrompt component - Current prompt:', currentPrompt);
+
+  useEffect(() => {
+    // Check URL params for selected theme and prompt
+    const theme = searchParams.get('theme');
+    const themeId = searchParams.get('themeId');
+    const promptId = searchParams.get('promptId');
+    const question = searchParams.get('question');
+    const customPromptParam = searchParams.get('customPrompt');
+
+    if (theme && themeId) {
+      setSelectedTheme(theme);
+      
+      if (question) {
+        if (customPromptParam) {
+          setCustomPrompt(question);
+        } else {
+          setSelectedPrompt(question);
+        }
+      }
+    }
+  }, [searchParams]);
+
 
   const handleSelectTheme = () => {
     console.log('🎯 Opening theme selection...');
@@ -25,58 +53,85 @@ export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
   };
 
   const handleSelectPrompt = () => {
-    if (!currentPrompt?.theme) {
+    if (!selectedTheme) {
       // If no theme selected, go to theme selection first
       handleSelectTheme();
       return;
     }
     
-    console.log('💭 Opening prompt selection for theme:', currentPrompt.theme);
-    router.push(`/home/prompts?theme=${currentPrompt.theme}`);
+    console.log('💭 Opening prompt selection for theme:', selectedTheme);
+    const themeId = searchParams.get('themeId');
+    router.push(`/home/prompts?theme=${encodeURIComponent(selectedTheme)}&themeId=${themeId}`);
   };
 
   const handleDeployPrompt = async () => {
-    if (!currentPrompt) return;
+    if (!selectedTheme || (!selectedPrompt && !customPrompt) || !session?.user?.id) return;
     
-    console.log('🚀 Deploying prompt:', currentPrompt);
+    const promptData = {
+      userId: session.user.id,
+      themeId: searchParams.get('themeId'),
+      themeName: selectedTheme,
+      question: selectedPrompt || customPrompt,
+      promptId: searchParams.get('promptId') || null,
+      customPrompt: customPrompt || null
+    };
+    
+    console.log('🚀 Deploying prompt:', promptData);
     setIsSelecting(true);
     
     try {
-      // TODO: API call to deploy prompt
-      // await deployPrompt(currentPrompt);
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+      const response = await fetch(`${backendUrl}/api/deployed-prompts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body: JSON.stringify(promptData)
+      });
       
-      // Simulate deployment
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to deploy prompt' }));
+        throw new Error(errorData.error || 'Failed to deploy prompt');
+      }
       
-      const deployedPrompt = {
-        ...currentPrompt,
-        deployedAt: new Date()
+      const deployedPrompt = await response.json();
+      
+      const prompt = {
+        id: deployedPrompt.id,
+        theme: selectedTheme,
+        question: selectedPrompt || customPrompt || '',
+        deployedAt: new Date(deployedPrompt.deployedAt)
       };
       
-      onPromptUpdate(deployedPrompt);
+      onPromptUpdate(prompt);
       console.log('✅ Prompt deployed successfully');
+      
+      // Clear URL params after successful deployment
+      router.push('/home');
     } catch (error) {
       console.error('❌ Failed to deploy prompt:', error);
+      alert('Failed to deploy prompt. Please try again.');
     } finally {
       setIsSelecting(false);
     }
   };
 
   const isDeployed = currentPrompt?.deployedAt;
-  const selectedTheme = currentPrompt?.theme;
-  const selectedPrompt = currentPrompt?.question;
+  const currentTheme = currentPrompt?.theme;
+  const currentQuestion = currentPrompt?.question;
 
   return (
-    <div className="innerview-card">
-      <div className="innerview-card-header">MY PROMPT</div>
-      <div className="innerview-card-description">
-        Craft your conversation starter and find your people. You can deploy a new prompt every 7 days.
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+      <div className="text-white text-lg font-medium mb-3">MY PROMPT</div>
+      <div className="text-gray-300 text-sm mb-4">
+        Craft your conversation starter to find your people. You can deploy a new prompt every 3 days.
       </div>
 
       <div className="space-y-3">
         {/* Select theme */}
         <div 
-          className={`innerview-prompt-item ${selectedTheme ? 'selected' : ''}`}
+          className={`bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 cursor-pointer transition-all hover:bg-white/20 ${selectedTheme ? 'border-green-400 bg-green-400/10' : ''}`}
           onClick={handleSelectTheme}
         >
           <div className="flex items-center justify-between">
@@ -94,14 +149,14 @@ export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
 
         {/* Select prompt */}
         <div 
-          className={`innerview-prompt-item ${selectedPrompt ? 'selected' : ''}`}
+          className={`bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 cursor-pointer transition-all hover:bg-white/20 ${(selectedPrompt || customPrompt) ? 'border-green-400 bg-green-400/10' : ''}`}
           onClick={handleSelectPrompt}
         >
           <div className="flex items-center justify-between">
             <div className="flex-1 pr-2">
               <div className="text-sm font-medium text-white">Select prompt</div>
               <div className="text-xs text-gray-400">
-                {selectedPrompt || 'Click to craft your prompt'}
+                {selectedPrompt || customPrompt || 'Click to craft your prompt'}
               </div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
@@ -111,11 +166,11 @@ export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
         </div>
 
         {/* Deploy button */}
-        {selectedPrompt && !isDeployed && (
+        {selectedTheme && (selectedPrompt || customPrompt) && !isDeployed && (
           <button
             onClick={handleDeployPrompt}
             disabled={isSelecting}
-            className="innerview-button-primary w-full py-3"
+            className="bg-green-400 text-black w-full py-3 rounded-lg font-medium hover:bg-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSelecting ? 'Deploying...' : 'Deploy my prompt'}
           </button>
@@ -125,7 +180,7 @@ export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
         {isDeployed && (
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
             <div className="text-sm font-medium text-green-400">Prompt deployed!</div>
-            <div className="text-xs text-green-300/70">Add new prompt in 7 days</div>
+            <div className="text-xs text-green-300/70">Add new prompt in 3 days</div>
           </div>
         )}
       </div>

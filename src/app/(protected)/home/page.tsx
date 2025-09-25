@@ -11,6 +11,7 @@ export default async function HomePage() {
   // For guest mode (development), create a mock session
   const guestSession = {
     user: {
+      id: 'guest-user-id',
       name: 'Guest User',
       username: 'guest',
       profilePictureUrl: null
