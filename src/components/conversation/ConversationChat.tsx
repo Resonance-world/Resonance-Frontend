@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ConversationMessage, MOCK_MESSAGES } from '@/types/conversation';
+import { ConversationMessage } from '@/types/conversation';
 import {useUser} from "@/hooks/useUser";
 import {useGetMessagesByConversation} from "@/api/messages/getMessagesByUser/useGetMessagesByConversation";
 import {useWriteMessage} from "@/api/messages/writeMessage/useWriteMessage";
@@ -179,7 +179,23 @@ export const ConversationChat = ({
   };
 
   if (isFetching || isFetchingConvMessages || userLoading || !currentUserId){
-    return "Fetching data...";
+    return (
+      <div className="fixed inset-0 w-full h-full flex items-center justify-center">
+        {/* Garden Background */}
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/garden_background.png)',
+            filter: 'brightness(0.3) contrast(1.2)',
+          }}
+        />
+        
+        {/* Loading Text */}
+        <div className="relative z-10 text-white text-2xl font-medium">
+          Loading
+        </div>
+      </div>
+    );
   }
   console.log(conversationMessages, "messages");
   console.log('chat User data logs:', chatUser);
