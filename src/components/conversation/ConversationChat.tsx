@@ -8,6 +8,7 @@ import {useGetMessagesByConversation} from "@/api/messages/getMessagesByUser/use
 import {useWriteMessage} from "@/api/messages/writeMessage/useWriteMessage";
 import { io, Socket } from 'socket.io-client';
 import { useGetUserById } from '@/api/user/useGetUserById/useGetUserById';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ConversationChatProps {
   participantId: string;
@@ -33,10 +34,49 @@ export const ConversationChat = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user: userData, loading: userLoading, updateUser } = useUser();
+  const queryClient = useQueryClient();
 
   const currentUserId = userData?.id;
   const { data: conversationMessages, isFetching: isFetchingConvMessages, error: convMessagesError, refetch } = useGetMessagesByConversation(participantId, currentUserId);
   const mutation = useWriteMessage(refetch);
+
+  // Function to mark messages as read
+  const markMessagesAsRead = async () => {
+    if (!currentUserId || !participantId) return;
+    
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+      const response = await fetch(`${backendUrl}/api/messages/mark-read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: JSON.stringify({
+          currentUserId,
+          senderId: participantId,
+        }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Messages marked as read. Updated count:', result.updatedCount);
+        // Invalidate unread messages query to trigger refetch
+        queryClient.invalidateQueries({ queryKey: ['unreadMessages'] });
+      } else {
+        console.error('❌ Failed to mark messages as read:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Failed to mark messages as read:', error);
+    }
+  };
+
+  // Mark messages as read when conversation loads
+  useEffect(() => {
+    if (currentUserId && participantId) {
+      markMessagesAsRead();
+    }
+  }, [currentUserId, participantId]);
 
   useEffect(() => {
     if (!currentUserId) {
@@ -161,9 +201,9 @@ export const ConversationChat = ({
       <div className="fixed inset-0 bg-black/40" />
 
       {/* Fixed Header - Username and Theme */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-sm border-b border-white/20">
+      <div className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm">
         {/* Back Button and Username */}
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between px-4 py-3 bg-[#4a342a]/80 border-b border-[#553c30]/50">
           <button
             onClick={handleBack}
             className="text-white/60 hover:text-white transition-colors"
@@ -200,7 +240,7 @@ export const ConversationChat = ({
         </div>
 
         {/* Conversation Prompt */}
-        <div className="px-4 pb-4">
+        <div className="px-4 py-3 bg-white/10 backdrop-blur-sm border-b border-white/20">
           <div className="text-center">
             <div className="text-gray-300 text-xs mb-1">Philosophy & Meaning</div>
             <div className="text-white text-sm font-medium">&ldquo;{conversationPrompt}&rdquo;</div>

@@ -8,13 +8,14 @@ import Image from 'next/image';
 interface ProfileCardProps {
   profile: CircleProfile;
   onClick: () => void;
+  hasUnreadMessages?: boolean;
 }
 
 /**
  * ProfileCard - Individual profile card with drag-drop support
  * Features: Visual feedback, notification indicators, drag handle
  */
-export const ProfileCard = ({ profile, onClick }: ProfileCardProps) => {
+export const ProfileCard = ({ profile, onClick, hasUnreadMessages = false }: ProfileCardProps) => {
   const {
     attributes,
     listeners,
@@ -73,8 +74,10 @@ export const ProfileCard = ({ profile, onClick }: ProfileCardProps) => {
           )}
         </div>
 
-        {/* Green status indicator */}
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2" style={{borderColor: 'var(--resonance-dark-bg)'}}></div>
+        {/* Green status indicator - only show when there are unread messages */}
+        {hasUnreadMessages && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2" style={{borderColor: 'var(--resonance-dark-bg)'}}></div>
+        )}
       </div>
 
       {/* Profile Name */}

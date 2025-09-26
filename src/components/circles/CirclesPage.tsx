@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ProfileCard } from './ProfileCard';
 import { useGetAllUsers } from '@/api/users/useGetAllUsers/useGetAllUsers';
+import { useGetUnreadMessages } from '@/api/messages/useGetUnreadMessages';
 /**
  * CirclesPage - Main circles interface with drag-drop
  * Features: Multiple circles, profile management, drag-drop between circles
@@ -13,7 +14,11 @@ export const CirclesPage = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<string>('ALL');
-    const {data: circles, isFetching, error} = useGetAllUsers(session?.user?.id);
+  const {data: circles, isFetching, error} = useGetAllUsers(session?.user?.id);
+  
+  // Get user IDs from circles (excluding current user)
+  const userIds = circles?.users?.filter(circle => circle.id !== session?.user?.id).map(circle => circle.id) || [];
+  const {data: unreadData} = useGetUnreadMessages(session?.user?.id, userIds);
     const relationCategories: { category: string, name: string }[] = [{
         category: "ALL",
         name: "All"
@@ -29,6 +34,17 @@ export const CirclesPage = () => {
     console.log('🔗 Navigating to conversation:', profileId);
     router.push(`/conversation/${profileId}`);
   };
+
+  // Create a map of sender IDs to unread status
+  const unreadMessagesMap = new Map<string, boolean>();
+  if (unreadData?.unreadMessages) {
+    console.log('🔍 Unread messages data:', unreadData.unreadMessages);
+    unreadData.unreadMessages.forEach((unread: { senderId: string; hasUnread: boolean }) => {
+      unreadMessagesMap.set(unread.senderId, unread.hasUnread);
+    });
+  }
+  console.log('🔍 Unread messages map:', Array.from(unreadMessagesMap.entries()));
+
   if (isFetching) {
     return <div>Loading...</div>;
   }
@@ -70,6 +86,7 @@ export const CirclesPage = () => {
                             key={circle.id}
                             profile={circle}
                             onClick={() => handleProfileClick(circle.id)}
+                            hasUnreadMessages={unreadMessagesMap.get(circle.id) || false}
                         />
                     ))
                     }
