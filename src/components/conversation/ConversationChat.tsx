@@ -26,7 +26,6 @@ export const ConversationChat = ({
 }: ConversationChatProps) => {
   const { data: chatUser, isFetching, error } = useGetUserById(participantId);
 
-  const [messages, setMessages] = useState<ConversationMessage[]>(MOCK_MESSAGES);
   const [newMessage, setNewMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -135,7 +134,7 @@ export const ConversationChat = ({
   };
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [conversationMessages]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || isSubmitting) return;
@@ -157,7 +156,6 @@ export const ConversationChat = ({
       receiverId: participantId,
     });
 
-    setMessages(prev => [...prev, message]);
     setNewMessage('');
 
     try {
