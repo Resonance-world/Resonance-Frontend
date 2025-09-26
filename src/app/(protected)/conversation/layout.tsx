@@ -10,7 +10,7 @@ interface ConversationLayoutProps {
  */
 export default function ConversationLayout({ children }: ConversationLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="fixed inset-0 z-[9999] bg-background">
       {/* Remove all navigation and headers for clean chat experience */}
       {children}
     </div>
