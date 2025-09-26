@@ -80,7 +80,7 @@ export const DeployedPromptSuccess = ({
       
       <div className="mt-3 p-2 bg-white/5 rounded-lg">
         <p className="text-gray-300 text-xs text-center">
-          🔍 We're finding people that resonate with your ...
+          🔍 We're finding people who resonate with you ...
         </p>
       </div>
     </div>

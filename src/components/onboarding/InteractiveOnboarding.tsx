@@ -287,7 +287,10 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
 
   const handleDateSelect = (date: string) => {
     const currentQuestion = onboardingQuestions[currentQuestionIndex];
-    if (!currentQuestion || currentQuestion.questionType !== 'date') return;
+    if (!currentQuestion || currentQuestion.questionType !== 'date' || !date.trim()) return;
+
+    // Clear the input value
+    setInputValue('');
 
     // Add user message showing the selected date in a readable format
     const userMsg: ChatMessage = {
@@ -325,7 +328,7 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
     
     setMessages(prev => [...prev, confirmMsg]);
     
-    // Move to next question index
+    // Move to next question index (sex question will be handled by the confirmation message)
     setCurrentQuestionIndex(prev => prev + 1);
   };
 
@@ -562,7 +565,7 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
       {/* Chat messages - properly constrained container */}
       <div className="relative z-10 flex-1 overflow-y-auto px-4 py-4 space-y-4" 
            style={{ 
-             paddingTop: '1rem', 
+             paddingTop: '5rem', // 80px to account for header height
              paddingBottom: showTextInput ? '6rem' : '2rem' // Dynamic padding based on whether text input is shown
            }}>
         
@@ -575,7 +578,7 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
               className={`max-w-[80%] p-4 rounded-2xl shadow-lg backdrop-blur-sm ${
                 message.isFromBot
                   ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-amber-600/80 text-white border border-amber-500/30'
+                  : 'bg-[#4a342a]/80 text-white border border-[#553c30]/30'
               }`}
             >
               <div className="whitespace-pre-wrap text-sm leading-relaxed">
@@ -584,11 +587,17 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
 
               {/* Interactive elements inside bot messages */}
               {message.showInteractiveElements && message.questionType === 'date' && (
-                <div className="mt-4 space-y-3">
+                <div className="mt-2">
                   <input
                     type="date"
-                    onChange={(e) => handleDateSelect(e.target.value)}
-                    className="w-full px-4 py-3 rounded-full border border-gray-600 bg-gray-800/80 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 backdrop-blur-sm"
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onBlur={(e) => {
+                      // Trigger when user finishes with date picker (clicks Done or taps outside)
+                      if (e.target.value) {
+                        handleDateSelect(e.target.value);
+                      }
+                    }}
+                    className="w-full px-4 py-3 rounded-full border border-gray-600 bg-gray-800/80 text-white focus:outline-none focus:ring-2 focus:ring-[#4a342a]/50 focus:border-[#4a342a]/50 backdrop-blur-sm"
                     max={new Date().toISOString().split('T')[0]}
                     min="1900-01-01"
                   />
@@ -596,7 +605,7 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
               )}
 
               {message.showInteractiveElements && message.questionType === 'select' && message.options && (
-                <div className="mt-4 space-y-2">
+                <div className="mt-2 space-y-2">
                   <div className="grid grid-cols-1 gap-2">
                     {message.options.map((option, index) => (
                       <button
@@ -612,13 +621,13 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
               )}
 
               {message.showInteractiveElements && message.questionType === 'chips' && message.options && (
-                <div className="mt-4 space-y-2">
+                <div className="mt-2 space-y-2">
                   <div className="flex flex-wrap gap-2">
                     {message.options.map((option, index) => (
                       <button
                         key={index}
                         onClick={() => handleOptionSelect(option)}
-                        className="px-4 py-2 bg-amber-600/80 hover:bg-amber-700/90 text-white border border-amber-500/50 hover:border-amber-400/70 rounded-full transition-all duration-300 text-sm font-medium"
+                        className="px-4 py-2 bg-[#4a342a]/80 hover:bg-[#553c30]/90 text-white border border-[#553c30]/50 hover:border-[#4a342a]/70 rounded-full transition-all duration-300 text-sm font-medium"
                       >
                         {option}
                       </button>
@@ -628,12 +637,12 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
               )}
 
               {message.showContinueButton && (
-                <div className="mt-4">
+                <div className="mt-2">
                   <button
                     onClick={handleFinalSubmit}
-                    className="w-full py-3 px-6 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    className="w-full py-3 px-6 bg-gradient-to-r from-[#4a342a] to-[#553c30] hover:from-[#553c30] hover:to-[#4a342a] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   >
-                    Continue to Gift ✨
+                    Continue
                   </button>
                 </div>
               )}
@@ -675,12 +684,12 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
                 onKeyPress={handleKeyPress}
                 placeholder="Share your thoughts..."
                 disabled={isLoading}
-                className="flex-1 px-4 py-3 rounded-full border border-gray-600 bg-gray-800/80 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 backdrop-blur-sm"
+                className="flex-1 px-4 py-3 rounded-full border border-gray-600 bg-gray-800/80 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a342a]/50 focus:border-[#4a342a]/50 backdrop-blur-sm"
               />
               <button
                 onClick={() => handleTextSubmit(inputValue)}
                 disabled={isLoading || !inputValue.trim()}
-                className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-gradient-to-r from-[#4a342a] to-[#553c30] hover:from-[#553c30] hover:to-[#4a342a] disabled:from-gray-600 disabled:to-gray-700 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
               >
                 Send
               </button>
