@@ -22,9 +22,11 @@ export const CirclesPage = () => {
     const relationCategories: { category: string, name: string }[] = [{
         category: "ALL",
         name: "All"
-    }, {category: "COLLAB", name: "Collaborators"}, {
+    }, 
+    // {category: "COLLAB", name: "Collaborators"}, // Commented out
+    {
         category: "PRIVATE",
-        name: "Friendship"
+        name: "Private"
     }]
   console.log('🎯 CirclesPage: Current user session:', session?.user?.id);
 
@@ -49,37 +51,80 @@ export const CirclesPage = () => {
     return <div>Loading...</div>;
   }
   return (
-    <div className="resonance-dark min-h-screen flex flex-col"
-            style={{backgroundColor: 'var(--resonance-dark-bg)'}}>
-            {/* Page Title */}
-            <div className="p-4">
-                <h1 className="text-white text-2xl font-bold">MY CIRCLES</h1>
-            </div>
+    <div className="resonance-dark min-h-screen flex flex-col relative">
+      {/* Background Image */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/circles_background.png)',
+          filter: 'brightness(0.4) contrast(1.1)' // Less dark than onboarding (0.4)
+        }}
+      />
+      
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Page Title */}
+        <div className="p-4">
+            <h1 className="text-white text-2xl font-bold">MY CIRCLES</h1>
+        </div>
 
-            {/* Tab Navigation */}
-            <div className="flex border-b px-4" style={{borderColor: 'var(--resonance-border-subtle)'}}>
-                {relationCategories.map(relationType => (
-                    <button
-                        key={relationType.category}
-                        onClick={() => setActiveTab(relationType.category)}
-                        className={`py-3 px-1 text-sm font-medium mr-6 ${
-                            activeTab === relationType.category
-                                ? 'text-white border-b-2 border-orange-500'
-                                : 'text-gray-400 hover:text-gray-300'
-                        }`}
-                    >
-                        {relationType.name}
-                    </button>
-                ))}
-            </div>
+        {/* Tab Navigation */}
+        <div className="flex border-b px-4" style={{borderColor: 'var(--resonance-border-subtle)'}}>
+            {relationCategories.map(relationType => (
+                <button
+                    key={relationType.category}
+                    onClick={() => setActiveTab(relationType.category)}
+                    className={`py-3 px-1 text-sm font-medium mr-6 ${
+                        activeTab === relationType.category
+                            ? 'text-white border-b-2 border-orange-500'
+                            : 'text-gray-400 hover:text-gray-300'
+                    }`}
+                >
+                    {relationType.name}
+                </button>
+            ))}
+        </div>
 
-            {/* Content */}
-            {isFetching ? <div className="flex items-center justify-center h-64">
-                <div className="text-white text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                    <p>Loading users...</p>
+        {/* Content */}
+        {isFetching ? <div className="flex items-center justify-center h-64">
+            <div className="text-white text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                <p>Loading users...</p>
+            </div>
+        </div> : <div className="flex-1 p-4 pb-24">
+            {activeTab === 'PRIVATE' ? (
+                // Private section with empty state
+                <div className="max-w-sm mx-auto">
+                    {/* Empty state - only show when private circle is empty */}
+                    {circles.users.filter(circle => circle.id !== session?.user?.id).length === 0 ? (
+                        <div className="bg-white/10 border border-white/20 rounded-lg p-6 text-center">
+                            <p className="text-white text-lg font-medium mb-2">
+                                Add more people to your private circle
+                            </p>
+                        </div>
+                    ) : (
+                        // Show private users in grid
+                        <div className="grid grid-cols-3 gap-4">
+                            {circles.users.filter(circle => circle.id !== session?.user?.id).map((circle) => (
+                                <ProfileCard
+                                    key={circle.id}
+                                    profile={circle}
+                                    onClick={() => handleProfileClick(circle.id)}
+                                    hasUnreadMessages={unreadMessagesMap.get(circle.id) || false}
+                                />
+                            ))}
+                        </div>
+                    )}
+                    
+                    {/* Note - always displayed */}
+                    <div className="mt-4 text-center">
+                        <p className="text-white/70 text-sm">
+                            People in your private circle can see your private garden
+                        </p>
+                    </div>
                 </div>
-            </div> : <div className="flex-1 p-4 pb-24">
+            ) : (
+                // All tab - existing grid layout
                 <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
                     {circles.users.filter(circle => circle.id !== session?.user?.id).map((circle) => (
                         <ProfileCard
@@ -88,10 +133,11 @@ export const CirclesPage = () => {
                             onClick={() => handleProfileClick(circle.id)}
                             hasUnreadMessages={unreadMessagesMap.get(circle.id) || false}
                         />
-                    ))
-                    }
+                    ))}
                 </div>
-            </div>}
-        </div>
+            )}
+        </div>}
+      </div>
+    </div>
   );
 }; 

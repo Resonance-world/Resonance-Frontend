@@ -160,7 +160,7 @@ export const TheirPublicGarden = () => {
         className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: 'url(/garden_background.png)',
-          filter: 'brightness(0.3) contrast(1.2)',
+          filter: 'brightness(0.4) contrast(1.1)',
         }}
       />
       

@@ -138,8 +138,8 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url(/garden_background.png)',
-          filter: 'brightness(0.3) contrast(1.2)',
+          backgroundImage: 'url(/circles_background.png)',
+          filter: 'brightness(0.4) contrast(1.1)',
         }}
       />
       
