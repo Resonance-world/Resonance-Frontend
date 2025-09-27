@@ -6,6 +6,10 @@ import { MyPrompt } from './MyPrompt';
 import { YourMatches } from './YourMatches';
 import { DeployedPromptSuccess } from './DeployedPromptSuccess';
 import { Prompt, Match } from '@/types/home';
+import { UserMatch } from '@/services/matchService';
+import { useMatches } from '@/api/matches/useMatches';
+import { useMatchWebSocket } from '@/hooks/useMatchWebSocket';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Session {
   user: {
@@ -26,50 +30,36 @@ interface LivingRoomProps {
  */
 export const LivingRoom = ({ session }: LivingRoomProps) => {
   const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
-  const [matches, setMatches] = useState<Match[]>([]);
   const [hasMatchedToday] = useState(false);
   const [activeDeployedPrompt, setActiveDeployedPrompt] = useState<any>(null);
   const [loadingDeployedPrompt, setLoadingDeployedPrompt] = useState(true);
+  
+  const queryClient = useQueryClient();
+  
+  // Real-time updates via WebSocket
+  const { isConnected } = useMatchWebSocket(session?.user?.id || '');
+  
+  // Use enhanced matching hooks with conditional polling
+  const { data: matches = [], isLoading: matchesLoading } = useMatches(
+    session?.user?.id || '', 
+    !isConnected // Only poll when WebSocket is not connected
+  );
 
   console.log('🏠 Living Room initialized for user:', session?.user?.name || session?.user?.username || 'Guest');
 
   useEffect(() => {
-    // Load user's current prompt and matches from backend
-    loadUserData();
     // Load active deployed prompt
     loadActiveDeployedPrompt();
   }, [session?.user?.id]);
 
-  const loadUserData = async () => {
-    console.log('📡 Loading user data...');
-    
-    if (!session?.user?.id) {
-      console.log('❌ No user session, skipping data load');
-      return;
+  // Auto-refresh matches when prompt is deployed
+  useEffect(() => {
+    if (activeDeployedPrompt) {
+      // Trigger match finding by invalidating matches query
+      queryClient.invalidateQueries({ queryKey: ['matches', session?.user?.id] });
     }
+  }, [activeDeployedPrompt, queryClient, session?.user?.id]);
 
-    try {
-      // Load user's matches
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
-      const response = await fetch(`${backendUrl}/api/matches?userId=${session.user.id}`, {
-        headers: {
-          'ngrok-skip-browser-warning': 'true'
-        }
-      });
-      
-      if (response.ok) {
-        const matchesData = await response.json();
-        console.log('✅ Loaded matches:', matchesData);
-        setMatches(matchesData);
-      } else {
-        console.error('❌ Failed to load matches');
-      }
-    } catch (error) {
-      console.error('❌ Error loading user data:', error);
-    }
-    
-    console.log('✅ User data loaded');
-  };
 
   const loadActiveDeployedPrompt = async () => {
     if (!session?.user?.id) {

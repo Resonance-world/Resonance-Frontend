@@ -1,9 +1,14 @@
 'use client';
 
 import { Match, Prompt } from '@/types/home';
+import { UserMatch } from '@/services/matchService';
+import { useAcceptMatch, useDeclineMatch } from '@/api/matches/useMatches';
+import { MatchStatusIndicator } from '@/components/matches/MatchStatusIndicator';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface YourMatchesProps {
-  matches: Match[];
+  matches: UserMatch[];
   hasMatchedToday: boolean;
   currentPrompt: Prompt | null;
 }
@@ -13,43 +18,30 @@ interface YourMatchesProps {
  * Implements the YOUR MATCHES section from Figma wireframes
  */
 export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMatchesProps) => {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const { mutate: acceptMatch, isPending: isAccepting } = useAcceptMatch();
+  const { mutate: declineMatch, isPending: isDeclining } = useDeclineMatch();
+
   console.log('🎯 YourMatches component - Matches:', matches.length, 'Has matched today:', hasMatchedToday);
 
-  const handleAcceptMatch = async (matchId: string) => {
-    console.log('✅ Accepting match:', matchId);
+  const handleAcceptMatch = (matchId: string) => {
+    if (!session?.user?.id) return;
     
-    try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
-      const response = await fetch(`${backendUrl}/api/matches/${matchId}/accept`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
-        },
-        body: JSON.stringify({ userId: 'cmfxx0quc00005mdanfwq1jh5' }) // TODO: Get from session
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('✅ Match accepted:', result);
-        
-        // Navigate to circles page to see the new connection
-        if (result.relationshipId) {
-          window.location.href = '/circles';
-        }
-      } else {
-        console.error('❌ Failed to accept match');
-        alert('Failed to accept match. Please try again.');
-      }
-    } catch (error) {
-      console.error('❌ Error accepting match:', error);
-      alert('Failed to accept match. Please try again.');
-    }
+    console.log('✅ Accepting match:', matchId);
+    acceptMatch({ matchId, userId: session.user.id });
   };
 
   const handleDeclineMatch = (matchId: string) => {
+    if (!session?.user?.id) return;
+    
     console.log('❌ Declining match:', matchId);
-    // TODO: Implement real match decline with backend API
+    declineMatch({ matchId, userId: session.user.id });
+  };
+
+  const handleGoToCircles = (relationshipId: string) => {
+    console.log('🔗 Going to circles with relationship:', relationshipId);
+    router.push(`/circles?relationshipId=${relationshipId}`);
   };
 
   const renderEmptyState = () => {
@@ -94,33 +86,89 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
     );
   };
 
-  const renderMatches = () => {
-    return (
-      <div className="space-y-3">
-        {matches.map((match) => (
-          <div key={match.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 mb-3">
-            <div className="mb-3">
-                             <p className="text-sm font-medium text-white mb-1">&ldquo;{match.question}&rdquo;</p>
-              <p className="text-xs text-gray-400">{match.category}</p>
-              <p className="text-xs text-gray-500">with {match.user}</p>
-            </div>
-            
+  const renderMatchCard = (match: UserMatch) => {
+    if (match.status === 'CONFIRMED') {
+      return (
+        <div key={match.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-green-400/30 mb-3">
+          <div className="mb-3">
+            <p className="text-sm font-medium text-white mb-1">&ldquo;{match.question}&rdquo;</p>
+            <p className="text-xs text-gray-400">{match.category}</p>
+            <p className="text-xs text-gray-500">with {match.user}</p>
+          </div>
+          
+          <div className="mb-3">
+            <MatchStatusIndicator 
+              status={match.status}
+              userAccepted={match.userAccepted}
+              otherUserAccepted={match.otherUserAccepted}
+            />
+          </div>
+          
+          <button
+            onClick={() => handleGoToCircles(match.relationshipId!)}
+            className="w-full bg-green-600 hover:bg-green-700 text-white text-sm py-2 px-3 rounded-md transition-colors font-medium"
+          >
+            Go to Circles to Start Chat
+          </button>
+        </div>
+      );
+    }
+    
+    if (match.status === 'PENDING') {
+      return (
+        <div key={match.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 mb-3">
+          <div className="mb-3">
+            <p className="text-sm font-medium text-white mb-1">&ldquo;{match.question}&rdquo;</p>
+            <p className="text-xs text-gray-400">{match.category}</p>
+            <p className="text-xs text-gray-500">with {match.user}</p>
+          </div>
+          
+          <div className="mb-3">
+            <MatchStatusIndicator 
+              status={match.status}
+              userAccepted={match.userAccepted}
+              otherUserAccepted={match.otherUserAccepted}
+            />
+          </div>
+          
+          {!match.userAccepted && (
             <div className="flex gap-2">
               <button
                 onClick={() => handleAcceptMatch(match.id)}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2 px-3 rounded-md transition-colors"
+                disabled={isAccepting}
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white text-sm py-2 px-3 rounded-md transition-colors"
               >
-                ✓
+                {isAccepting ? '...' : 'Accept'}
               </button>
               <button
                 onClick={() => handleDeclineMatch(match.id)}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm py-2 px-3 rounded-md transition-colors"
+                disabled={isDeclining}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white text-sm py-2 px-3 rounded-md transition-colors"
               >
-                ✗
+                {isDeclining ? '...' : 'Decline'}
               </button>
             </div>
-          </div>
-        ))}
+          )}
+        </div>
+      );
+    }
+    
+    // Don't render declined or expired matches
+    return null;
+  };
+
+  const renderMatches = () => {
+    const visibleMatches = matches.filter(match => 
+      match.status === 'PENDING' || match.status === 'CONFIRMED'
+    );
+
+    if (visibleMatches.length === 0) {
+      return renderEmptyState();
+    }
+
+    return (
+      <div className="space-y-3">
+        {visibleMatches.map(renderMatchCard)}
       </div>
     );
   };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ProfileCard } from './ProfileCard';
 import { useGetAllUsers } from '@/api/users/useGetAllUsers/useGetAllUsers';
@@ -13,10 +13,14 @@ import { relationshipsService } from '@/services/relationshipsService';
  */
 export const CirclesPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [privateUsers, setPrivateUsers] = useState<string[]>([]); // Array of user IDs in private circle
   const {data: circles, isFetching, error} = useGetAllUsers(session?.user?.id);
+  
+  // Handle relationshipId parameter from confirmed matches
+  const relationshipId = searchParams.get('relationshipId');
   
   // Get user IDs from circles (excluding current user)
   const userIds = circles?.users?.filter(circle => circle.id !== session?.user?.id).map(circle => circle.id) || [];
@@ -39,6 +43,24 @@ export const CirclesPage = () => {
 
     loadPrivateRelationships();
   }, [session?.user?.id]);
+
+  // Handle relationshipId parameter from confirmed matches
+  useEffect(() => {
+    if (relationshipId) {
+      console.log('🎉 User came from confirmed match with relationship:', relationshipId);
+      
+      // Show success message (you could integrate with a toast library here)
+      console.log('✅ New connection added to your circles!');
+      
+      // Optionally scroll to or highlight the new connection
+      // You could add logic here to highlight the new user in the circles
+      
+      // Clean up the URL parameter
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('relationshipId');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, [relationshipId]);
 
   const relationCategories: { category: string, name: string }[] = [{
         category: "ALL",

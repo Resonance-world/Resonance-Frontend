@@ -77,12 +77,12 @@ export const DeployedPromptSuccess = ({
           <span>Expires: {formatDate(expiresAt)}</span>
         </div>
       </div>
-      
+{/*       
       <div className="mt-3 p-2 bg-white/5 rounded-lg">
         <p className="text-gray-300 text-xs text-center">
           🔍 We're finding people who resonate with you ...
         </p>
-      </div>
+      </div> */}
     </div>
   );
 };
