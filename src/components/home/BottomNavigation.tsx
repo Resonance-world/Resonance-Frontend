@@ -3,7 +3,9 @@
 import Link from 'next/link';
 
 interface BottomNavigationProps {
-  currentPage: 'living-room' | 'circles' | 'garden' | 'notifications';
+  currentPage: 'living-room' | 'circles' | 'garden' ;
+  //  currentPage: 'living-room' | 'circles' | 'garden' | 'notifications';
+
 }
 
 /**
@@ -55,18 +57,18 @@ export const BottomNavigation = ({ currentPage }: BottomNavigationProps) => {
         </svg>
       )
     },
-    {
-      id: 'notifications',
-      name: '',
-      href: '/notifications',
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-          {/* Bell notification icon */}
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="none"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="none"/>
-        </svg>
-      )
-    }
+    // {
+    //   id: 'notifications',
+    //   name: '',
+    //   href: '/notifications',
+    //   icon: (
+    //     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    //       {/* Bell notification icon */}
+    //       <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="none"/>
+    //       <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="none"/>
+    //     </svg>
+    //   )
+    // }
   ];
 
   return (
