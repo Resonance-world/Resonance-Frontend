@@ -9,6 +9,7 @@ import {useWriteMessage} from "@/api/messages/writeMessage/useWriteMessage";
 import { io, Socket } from 'socket.io-client';
 import { useGetUserById } from '@/api/user/useGetUserById/useGetUserById';
 import { useQueryClient } from '@tanstack/react-query';
+import { relationshipsService } from '@/services/relationshipsService';
 
 interface ConversationChatProps {
   participantId: string;
@@ -30,6 +31,8 @@ export const ConversationChat = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [canAccessPrivateGarden, setCanAccessPrivateGarden] = useState<boolean | null>(null);
+  const [isCheckingGardenAccess, setIsCheckingGardenAccess] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user: userData, loading: userLoading, updateUser } = useUser();
@@ -38,6 +41,36 @@ export const ConversationChat = ({
   const currentUserId = userData?.id;
   const { data: conversationMessages, isFetching: isFetchingConvMessages, error: convMessagesError, refetch } = useGetMessagesByConversation(participantId, currentUserId);
   const mutation = useWriteMessage(refetch);
+
+  // Check garden access when participant changes
+  useEffect(() => {
+    const checkGardenAccess = async () => {
+      if (participantId && currentUserId) {
+        setIsCheckingGardenAccess(true);
+        try {
+          const response = await relationshipsService.canAccessPrivateGarden(participantId, currentUserId);
+          setCanAccessPrivateGarden(response.canAccess);
+          console.log('🔍 Garden access check result:', response.canAccess);
+        } catch (error) {
+          console.error('❌ Error checking garden access:', error);
+          setCanAccessPrivateGarden(false);
+        } finally {
+          setIsCheckingGardenAccess(false);
+        }
+      }
+    };
+
+    checkGardenAccess();
+  }, [participantId, currentUserId]);
+
+  // Function to handle garden navigation
+  const handleGardenNavigation = () => {
+    if (canAccessPrivateGarden) {
+      router.push(`/garden/their-private/${participantId}`);
+    } else {
+      router.push(`/garden/their-public/${participantId}`);
+    }
+  };
 
   // Function to mark messages as read
   const markMessagesAsRead = async () => {
@@ -228,9 +261,7 @@ export const ConversationChat = ({
           </button>
 
           <button
-            onClick={() => {
-              window.location.href = `/garden/their-public/${participantId}`;
-            }}
+            onClick={handleGardenNavigation}
             className="flex items-center gap-3 hover:bg-white/5 rounded-lg px-3 py-2 transition-colors"
           >
             {chatUser?.user?.profilePictureUrl ? (
@@ -246,7 +277,13 @@ export const ConversationChat = ({
                 className="w-8 h-8 rounded-full object-cover"
               />
             )}
-            <span className="text-white font-medium">{chatUser?.user?.name || chatUser?.user?.username}</span>
+            <div className="flex flex-col">
+              <span className="text-white font-medium">{chatUser?.user?.name || chatUser?.user?.username}</span>
+              <span className="text-white/60 text-xs">
+                {isCheckingGardenAccess ? '(checking access...)' : 
+                 canAccessPrivateGarden ? '(Private)' : '(Public)'}
+              </span>
+            </div>
           </button>
 
           {/* Empty div to balance the layout */}

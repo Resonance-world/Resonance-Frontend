@@ -9,13 +9,25 @@ interface ProfileCardProps {
   profile: CircleProfile;
   onClick: () => void;
   hasUnreadMessages?: boolean;
+  showActions?: boolean; // New prop to show/hide action icons
+  isInPrivate?: boolean; // New prop to know if user is in private circle
+  onAddToPrivate?: (profile: CircleProfile) => void; // New callback
+  onRemoveFromPrivate?: (profileId: string) => void; // New callback
 }
 
 /**
  * ProfileCard - Individual profile card with drag-drop support
  * Features: Visual feedback, notification indicators, drag handle
  */
-export const ProfileCard = ({ profile, onClick, hasUnreadMessages = false }: ProfileCardProps) => {
+export const ProfileCard = ({ 
+  profile, 
+  onClick, 
+  hasUnreadMessages = false,
+  showActions = false,
+  isInPrivate = false,
+  onAddToPrivate,
+  onRemoveFromPrivate
+}: ProfileCardProps) => {
   const {
     attributes,
     listeners,
@@ -77,6 +89,37 @@ export const ProfileCard = ({ profile, onClick, hasUnreadMessages = false }: Pro
         {/* Green status indicator - only show when there are unread messages */}
         {hasUnreadMessages && (
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2" style={{borderColor: 'var(--resonance-dark-bg)'}}></div>
+        )}
+
+        {/* Action Icons - only show when showActions is true */}
+        {showActions && (
+          <div className="absolute -top-1 -left-1 flex gap-1">
+            {isInPrivate ? (
+              // Remove from private icon
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveFromPrivate?.(profile.id);
+                }}
+                className="w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-xs transition-colors"
+                title="Remove from Private"
+              >
+                ×
+              </button>
+            ) : (
+              // Add to private icon
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToPrivate?.(profile);
+                }}
+                className="w-5 h-5 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center text-white text-xs transition-colors"
+                title="Add to Private"
+              >
+                +
+              </button>
+            )}
+          </div>
         )}
       </div>
 

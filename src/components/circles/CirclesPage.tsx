@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { ProfileCard } from './ProfileCard';
 import { useGetAllUsers } from '@/api/users/useGetAllUsers/useGetAllUsers';
 import { useGetUnreadMessages } from '@/api/messages/useGetUnreadMessages';
+import { relationshipsService } from '@/services/relationshipsService';
 /**
  * CirclesPage - Main circles interface with drag-drop
  * Features: Multiple circles, profile management, drag-drop between circles
@@ -14,12 +15,32 @@ export const CirclesPage = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<string>('ALL');
+  const [privateUsers, setPrivateUsers] = useState<string[]>([]); // Array of user IDs in private circle
   const {data: circles, isFetching, error} = useGetAllUsers(session?.user?.id);
   
   // Get user IDs from circles (excluding current user)
   const userIds = circles?.users?.filter(circle => circle.id !== session?.user?.id).map(circle => circle.id) || [];
   const {data: unreadData} = useGetUnreadMessages(session?.user?.id, userIds);
-    const relationCategories: { category: string, name: string }[] = [{
+  
+  // Load private relationships on component mount
+  useEffect(() => {
+    const loadPrivateRelationships = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await relationshipsService.getPrivateRelationships(session.user.id);
+          const privateUserIds = response.relationships.map(rel => rel.relatedUserId);
+          setPrivateUsers(privateUserIds);
+          console.log('✅ Loaded private relationships:', privateUserIds);
+        } catch (error) {
+          console.error('❌ Error loading private relationships:', error);
+        }
+      }
+    };
+
+    loadPrivateRelationships();
+  }, [session?.user?.id]);
+
+  const relationCategories: { category: string, name: string }[] = [{
         category: "ALL",
         name: "All"
     }, 
@@ -35,6 +56,41 @@ export const CirclesPage = () => {
   const handleProfileClick = (profileId: string) => {
     console.log('🔗 Navigating to conversation:', profileId);
     router.push(`/conversation/${profileId}`);
+  };
+
+  // Modal state and handlers
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [userToAdd, setUserToAdd] = useState<any>(null);
+
+  const handleAddToPrivate = (user: any) => {
+    setUserToAdd(user);
+    setShowAddModal(true);
+  };
+
+  const confirmAddToPrivate = async () => {
+    if (userToAdd && !privateUsers.includes(userToAdd.id)) {
+      try {
+        await relationshipsService.addToPrivateCircle(userToAdd.id, session?.user?.id!);
+        setPrivateUsers(prev => [...prev, userToAdd.id]);
+        console.log('✅ User added to private circle successfully');
+      } catch (error) {
+        console.error('❌ Error adding to private circle:', error);
+        // You could add a toast notification here
+      }
+    }
+    setShowAddModal(false);
+    setUserToAdd(null);
+  };
+
+  const handleRemoveFromPrivate = async (userId: string) => {
+    try {
+      await relationshipsService.removeFromPrivateCircle(userId, session?.user?.id!);
+      setPrivateUsers(prev => prev.filter(id => id !== userId));
+      console.log('✅ User removed from private circle successfully');
+    } catch (error) {
+      console.error('❌ Error removing from private circle:', error);
+      // You could add a toast notification here
+    }
   };
 
   // Create a map of sender IDs to unread status
@@ -105,14 +161,20 @@ export const CirclesPage = () => {
                     ) : (
                         // Show private users in grid
                         <div className="grid grid-cols-3 gap-4">
-                            {circles.users.filter(circle => circle.id !== session?.user?.id).map((circle) => (
-                                <ProfileCard
-                                    key={circle.id}
-                                    profile={circle}
-                                    onClick={() => handleProfileClick(circle.id)}
-                                    hasUnreadMessages={unreadMessagesMap.get(circle.id) || false}
-                                />
-                            ))}
+                            {circles.users
+                                .filter(circle => circle.id !== session?.user?.id && privateUsers.includes(circle.id))
+                                .map((circle) => (
+                                    <ProfileCard
+                                        key={circle.id}
+                                        profile={circle}
+                                        onClick={() => handleProfileClick(circle.id)}
+                                        hasUnreadMessages={unreadMessagesMap.get(circle.id) || false}
+                                        showActions={true}
+                                        isInPrivate={true}
+                                        onAddToPrivate={handleAddToPrivate}
+                                        onRemoveFromPrivate={handleRemoveFromPrivate}
+                                    />
+                                ))}
                         </div>
                     )}
                     
@@ -132,12 +194,42 @@ export const CirclesPage = () => {
                             profile={circle}
                             onClick={() => handleProfileClick(circle.id)}
                             hasUnreadMessages={unreadMessagesMap.get(circle.id) || false}
+                            showActions={true}
+                            isInPrivate={privateUsers.includes(circle.id)}
+                            onAddToPrivate={handleAddToPrivate}
+                            onRemoveFromPrivate={handleRemoveFromPrivate}
                         />
                     ))}
                 </div>
             )}
         </div>}
       </div>
+
+      {/* Add to Private Confirmation Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white/10 border border-white/20 rounded-lg p-6 max-w-sm mx-4 backdrop-blur-sm">
+            <h3 className="text-white text-lg font-medium mb-4">Add to Private Circle</h3>
+            <p className="text-white/80 text-sm mb-6">
+              People in your private circle can see your Private Garden
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white hover:bg-white/20 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAddToPrivate}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 rounded-lg px-4 py-2 text-white transition-colors"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }; 
