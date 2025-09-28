@@ -215,7 +215,7 @@ export const MyPublicGarden = () => {
             className="bg-white/10 backdrop-blur-sm rounded-lg p-4 w-full text-left border border-white/20 hover:bg-white/20 transition-colors"
           >
             <div className="flex items-center justify-between">
-              <span className="text-white font-medium">MY REFLECTION</span>
+              <span className="text-white font-medium">MY REFLECTIONS</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
                 <path d="M9 18l6-6-6-6"/>
               </svg>

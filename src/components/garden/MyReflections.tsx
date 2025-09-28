@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 export const MyReflections = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const router = useRouter();
 
   const monthNames = [
@@ -77,7 +78,7 @@ export const MyReflections = () => {
 
   const handleGoToChat = () => {
     console.log('💬 Going to chat for reflection');
-    // Navigate to chat or reflection detail
+    setShowComingSoonModal(true);
   };
 
   const days = getDaysInMonth(currentDate);
@@ -110,7 +111,7 @@ export const MyReflections = () => {
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
         </button>
-        <h1 className="text-white text-lg font-medium">My reflection</h1>
+        <h1 className="text-white text-lg font-medium">My reflections</h1>
         <div className="w-6"></div> {/* Spacer for centering */}
       </div>
 
@@ -192,21 +193,39 @@ export const MyReflections = () => {
               What is one thing you wish people really know about you?
             </p>
             <div className="text-gray-400 text-sm leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+              You don't have any reflection for that date
             </div>
           </div>
 
           <button
             onClick={handleGoToChat}
-            className="innerview-button-primary w-full flex items-center justify-center gap-2"
+            className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 p-4 w-full flex items-center justify-center gap-2 hover:bg-white/15 transition-colors"
           >
-            <span>go to chat</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <span className="text-white text-sm">go to chat</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/70">
               <path d="M9 18l6-6-6-6"/>
             </svg>
           </button>
         </div>
       </div>
+
+      {/* Coming Soon Modal */}
+      {showComingSoonModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white/10 border border-white/20 rounded-lg p-6 max-w-sm mx-4 backdrop-blur-sm">
+            <h3 className="text-white text-lg font-medium mb-4">Coming Soon</h3>
+            <p className="text-white/80 text-sm mb-6">
+              The chat feature is currently under development. Stay tuned for updates!
+            </p>
+            <button
+              onClick={() => setShowComingSoonModal(false)}
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white hover:bg-white/20 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
