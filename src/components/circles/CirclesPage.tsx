@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ProfileCard } from './ProfileCard';
-import { useGetAllUsers } from '@/api/users/useGetAllUsers/useGetAllUsers';
+// import { useGetAllUsers } from '@/api/users/useGetAllUsers/useGetAllUsers';
+import { useMatchedUsers } from '@/api/matches/useMatchedUsers';
 import { useGetUnreadMessages } from '@/api/messages/useGetUnreadMessages';
 import { relationshipsService } from '@/services/relationshipsService';
 /**
@@ -17,13 +18,14 @@ export const CirclesPage = () => {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [privateUsers, setPrivateUsers] = useState<string[]>([]); // Array of user IDs in private circle
-  const {data: circles, isFetching, error} = useGetAllUsers(session?.user?.id);
+  // const {data: circles, isFetching, error} = useGetAllUsers(session?.user?.id);
+  const {data: matchedUsersData, isFetching, error} = useMatchedUsers(session?.user?.id);
   
   // Handle relationshipId parameter from confirmed matches
   const relationshipId = searchParams.get('relationshipId');
   
-  // Get user IDs from circles (excluding current user)
-  const userIds = circles?.users?.filter(circle => circle.id !== session?.user?.id).map(circle => circle.id) || [];
+  // Get user IDs from matched users (excluding current user)
+  const userIds = matchedUsersData?.users?.filter(user => user.id !== session?.user?.id).map(user => user.id) || [];
   const {data: unreadData} = useGetUnreadMessages(session?.user?.id, userIds);
   
   // Load private relationships on component mount
@@ -174,7 +176,7 @@ export const CirclesPage = () => {
                 // Private section with empty state
                 <div className="max-w-sm mx-auto">
                     {/* Empty state - only show when private circle is empty */}
-                    {circles.users.filter(circle => circle.id !== session?.user?.id).length === 0 ? (
+                    {matchedUsersData?.users?.filter(user => user.id !== session?.user?.id).length === 0 ? (
                         <div className="bg-white/10 border border-white/20 rounded-lg p-6 text-center">
                             <p className="text-white text-lg font-medium mb-2">
                                 Add more people to your private circle
@@ -183,14 +185,14 @@ export const CirclesPage = () => {
                     ) : (
                         // Show private users in grid
                         <div className="grid grid-cols-3 gap-4">
-                            {circles.users
-                                .filter(circle => circle.id !== session?.user?.id && privateUsers.includes(circle.id))
-                                .map((circle) => (
+                            {matchedUsersData?.users
+                                ?.filter(user => user.id !== session?.user?.id && privateUsers.includes(user.id))
+                                .map((user) => (
                                     <ProfileCard
-                                        key={circle.id}
-                                        profile={circle}
-                                        onClick={() => handleProfileClick(circle.id)}
-                                        hasUnreadMessages={unreadMessagesMap.get(circle.id) || false}
+                                        key={user.id}
+                                        profile={user}
+                                        onClick={() => handleProfileClick(user.id)}
+                                        hasUnreadMessages={unreadMessagesMap.get(user.id) || false}
                                         showActions={true}
                                         isInPrivate={true}
                                         onAddToPrivate={handleAddToPrivate}
@@ -211,19 +213,29 @@ export const CirclesPage = () => {
                 </div>
             ) : (
                 // All tab - existing grid layout
-                <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
-                    {circles.users.filter(circle => circle.id !== session?.user?.id).map((circle) => (
-                        <ProfileCard
-                            key={circle.id}
-                            profile={circle}
-                            onClick={() => handleProfileClick(circle.id)}
-                            hasUnreadMessages={unreadMessagesMap.get(circle.id) || false}
-                            showActions={true}
-                            isInPrivate={privateUsers.includes(circle.id)}
-                            onAddToPrivate={handleAddToPrivate}
-                            onRemoveFromPrivate={handleRemoveFromPrivate}
-                        />
-                    ))}
+                <div className="max-w-sm mx-auto">
+                    {matchedUsersData?.users?.filter(user => user.id !== session?.user?.id).length === 0 ? (
+                        <div className="bg-white/10 border border-white/20 rounded-lg p-6 text-center">
+                            <p className="text-white text-lg font-medium mb-2">
+                                No matches yet! Stay tuned - Great conversations will show up here soon!
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-3 gap-4">
+                            {matchedUsersData?.users?.filter(user => user.id !== session?.user?.id).map((user) => (
+                                <ProfileCard
+                                    key={user.id}
+                                    profile={user}
+                                    onClick={() => handleProfileClick(user.id)}
+                                    hasUnreadMessages={unreadMessagesMap.get(user.id) || false}
+                                    showActions={true}
+                                    isInPrivate={privateUsers.includes(user.id)}
+                                    onAddToPrivate={handleAddToPrivate}
+                                    onRemoveFromPrivate={handleRemoveFromPrivate}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </div>}
