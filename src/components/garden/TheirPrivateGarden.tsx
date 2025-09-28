@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { GardenProfile } from '@/types/garden';
 import { fetchUserProfile } from '@/services/circlesService';
+import { matchService, UserMatch } from '@/services/matchService';
 
 /**
  * TheirPrivateGarden - Another user's private garden (for mutual friends/collaborators)
@@ -13,9 +15,36 @@ import { fetchUserProfile } from '@/services/circlesService';
 export const TheirPrivateGarden = () => {
   const [profile, setProfile] = useState<GardenProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [matchData, setMatchData] = useState<UserMatch | null>(null);
+  const [showReflectionModal, setShowReflectionModal] = useState(false);
   const router = useRouter();
   const params = useParams();
+  const { data: session } = useSession();
   const userId = params?.userId as string;
+
+  // Fetch match data between current user and the profile user
+  const fetchMatchData = async (currentUserId: string, profileUserId: string) => {
+    try {
+      console.log('🔍 Fetching match data between users:', currentUserId, profileUserId);
+      const matches = await matchService.getUserMatches(currentUserId);
+      
+      // Find match between current user and profile user
+      const match = matches.find(m => 
+        m.userProfile.id === profileUserId && m.status === 'CONFIRMED'
+      );
+      
+      if (match) {
+        console.log('✅ Found match data:', match);
+        console.log('🔍 Match category:', match.category);
+        console.log('🔍 Match question:', match.question);
+        setMatchData(match);
+      } else {
+        console.log('ℹ️ No confirmed match found between users');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching match data:', error);
+    }
+  };
 
   // Fetch user data from backend API
   useEffect(() => {
@@ -81,6 +110,11 @@ export const TheirPrivateGarden = () => {
         };
 
         setProfile(userProfile);
+        
+        // Fetch match data if we have a current user session
+        if (session?.user?.id) {
+          await fetchMatchData(session.user.id, userData.id);
+        }
         
       } catch (error) {
         console.error('❌ Error loading user profile:', error);
@@ -163,7 +197,7 @@ export const TheirPrivateGarden = () => {
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-3 mb-4">
             <h1 className="text-white text-3xl font-light italic">{profile.name}</h1>
-            <span className="bg-amber-600/80 text-white px-3 py-1 rounded-lg text-sm">
+            <span className="bg-amber-800/80 text-white px-3 py-1 rounded-lg text-sm">
               Collaborator
             </span>
           </div>
@@ -173,8 +207,8 @@ export const TheirPrivateGarden = () => {
         <div className="mb-6">
           <div className="relative">
             <img
-              src={profile.nftImage}
-              alt={`${profile.name}'s garden`}
+              src={profile.profileImage}
+              alt={`${profile.name}'s profile`}
               className="w-full h-64 object-cover rounded-lg"
             />
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-1">
@@ -193,7 +227,7 @@ export const TheirPrivateGarden = () => {
               {profile.essence.map((essence, index) => (
                 <span
                   key={index}
-                  className="bg-amber-600/80 text-white px-3 py-1 rounded-full text-sm"
+                  className="bg-amber-800/80 text-white px-3 py-1 rounded-full text-sm"
                 >
                   {essence}
                 </span>
@@ -240,11 +274,27 @@ export const TheirPrivateGarden = () => {
             <span className="text-xl">👁️</span>
           </div>
           <div className="text-white text-sm leading-relaxed mb-3">
-            <p>You and {profile.name} match on August 16th 2025 through prompt 'Computer mind vs Human mind?'</p>
-            <p>The conversation went well and you find her intriguing. You discussed about creativity and output.</p>
+            {matchData ? (
+              <>
+                <p>You and {profile.name} matched on {matchData.deployedAt ? new Date(matchData.deployedAt).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                }) : 'an unknown date'} through prompt '{matchData.question || 'Unknown prompt'}'</p>
+                <p>The conversation went well and you find {profile.name} intriguing. You discussed about {(matchData.category || 'various topics').toLowerCase()}.</p>
+              </>
+            ) : (
+              <>
+                <p>You and {profile.name} haven't matched yet.</p>
+                <p>Start a conversation to build your connection and create reflections together.</p>
+              </>
+            )}
           </div>
-          <button className="bg-amber-600/80 hover:bg-amber-700/90 text-white border border-amber-500/50 hover:border-amber-400/70 rounded-lg px-4 py-2 w-full flex items-center justify-center gap-2 transition-all duration-300">
-            <span>Reflection</span>
+          <button 
+            onClick={() => setShowReflectionModal(true)}
+            className="bg-amber-800/80 hover:bg-amber-900/90 text-white border border-amber-700/50 hover:border-amber-600/70 rounded-lg px-4 py-2 w-full flex items-center justify-center gap-2 transition-all duration-300"
+          >
+            <span>Reflect on Conversation</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 18l6-6-6-6"/>
             </svg>
@@ -275,6 +325,24 @@ export const TheirPrivateGarden = () => {
         </div>
 
       </div>
+
+      {/* Reflection Modal */}
+      {showReflectionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white/10 border border-white/20 rounded-lg p-6 max-w-sm mx-4 backdrop-blur-sm">
+            <h3 className="text-white text-lg font-medium mb-4">Coming Soon</h3>
+            <p className="text-white/80 text-sm mb-6">
+              The reflection feature is currently under development. Stay tuned for updates!
+            </p>
+            <button
+              onClick={() => setShowReflectionModal(false)}
+              className="w-full bg-amber-800/80 hover:bg-amber-900/90 text-white rounded-lg px-4 py-2 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
