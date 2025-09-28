@@ -6,8 +6,8 @@ export const useMatches = (userId: string, enablePolling: boolean = true) => {
     queryKey: ['matches', userId],
     queryFn: () => matchService.getUserMatches(userId),
     enabled: !!userId,
-    refetchInterval: enablePolling ? 30000 : false, // Only poll if enabled
-    staleTime: 60000, // Consider data stale after 60 seconds
+    refetchInterval: enablePolling ? 60000 : false, // Poll every 60 seconds instead of 30
+    staleTime: 30000, // Consider data stale after 30 seconds
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
     refetchOnReconnect: true, // Refetch when reconnecting
   });

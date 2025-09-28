@@ -22,10 +22,26 @@ export const useMatchWebSocket = (userId: string) => {
     // Listen for match status changes
     socket.on('match_status_changed', (data: { matchId: string; status: string; userId: string }) => {
       console.log('🔔 Match status changed:', data);
+      console.log('🔔 Current user ID:', userId);
+      console.log('🔔 Event user ID:', data.userId);
       
       // Update cache directly instead of invalidating (truly independent)
       queryClient.setQueryData(['matches', data.userId], (oldData: any[] | undefined) => {
-        if (!oldData) return oldData;
+        if (!oldData) {
+          console.log('🔔 No existing matches data for user:', data.userId);
+          return oldData;
+        }
+        
+        console.log('🔔 Current matches count:', oldData.length);
+        
+        // If match is declined, remove it from the list
+        if (data.status === 'DECLINED') {
+          const filteredMatches = oldData.filter(match => match.id !== data.matchId);
+          console.log('🔔 Removed declined match, new count:', filteredMatches.length);
+          return filteredMatches;
+        }
+        
+        // Otherwise, update the match status
         return oldData.map(match => 
           match.id === data.matchId 
             ? { ...match, status: data.status }

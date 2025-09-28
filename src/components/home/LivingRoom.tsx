@@ -9,7 +9,7 @@ import { Prompt, Match } from '@/types/home';
 import { UserMatch } from '@/services/matchService';
 import { useMatches } from '@/api/matches/useMatches';
 import { useMatchWebSocket } from '@/hooks/useMatchWebSocket';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 interface Session {
   user: {
@@ -31,92 +31,106 @@ interface LivingRoomProps {
 export const LivingRoom = ({ session }: LivingRoomProps) => {
   const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
   const [hasMatchedToday] = useState(false);
-  const [activeDeployedPrompt, setActiveDeployedPrompt] = useState<any>(null);
-  const [loadingDeployedPrompt, setLoadingDeployedPrompt] = useState(true);
   
   const queryClient = useQueryClient();
   
   // Real-time updates via WebSocket
   const { isConnected } = useMatchWebSocket(session?.user?.id || '');
   
+  // Load deployed prompts using React Query for parallel loading
+  const { data: deployedPrompts = [], isLoading: loadingDeployedPrompt } = useQuery({
+    queryKey: ['deployedPrompts', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return [];
+      
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+      const response = await fetch(`${backendUrl}/api/deployed-prompts?userId=${session.user.id}`, {
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+          'Cache-Control': 'max-age=30'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch deployed prompts');
+      }
+      
+      return response.json();
+    },
+    enabled: !!session?.user?.id,
+    staleTime: 30000, // Consider data stale after 30 seconds
+    refetchOnWindowFocus: false,
+  });
+  
   // Use enhanced matching hooks with conditional polling
   const { data: matches = [], isLoading: matchesLoading } = useMatches(
     session?.user?.id || '', 
     !isConnected // Only poll when WebSocket is not connected
   );
+  
+  // Find active deployed prompt from the fetched data
+  const activeDeployedPrompt = deployedPrompts.find((p: any) => p.status === 'ACTIVE');
+  const isInitialLoad = loadingDeployedPrompt || matchesLoading;
 
   console.log('🏠 Living Room initialized for user:', session?.user?.name || session?.user?.username || 'Guest');
 
-  useEffect(() => {
-    // Load active deployed prompt
-    loadActiveDeployedPrompt();
-  }, [session?.user?.id]);
-
   // Auto-refresh matches when prompt is deployed
   useEffect(() => {
-    if (activeDeployedPrompt) {
-      // Trigger match finding by invalidating matches query
-      queryClient.invalidateQueries({ queryKey: ['matches', session?.user?.id] });
+    if (activeDeployedPrompt && session?.user?.id) {
+      // Trigger match finding in background
+      triggerMatchFinding();
+      // Also invalidate matches query to get fresh data
+      queryClient.invalidateQueries({ queryKey: ['matches', session.user.id] });
     }
   }, [activeDeployedPrompt, queryClient, session?.user?.id]);
 
-
-  const loadActiveDeployedPrompt = async () => {
-    if (!session?.user?.id) {
-      setLoadingDeployedPrompt(false);
-      return;
-    }
-
+  const triggerMatchFinding = async () => {
+    if (!session?.user?.id) return;
+    
     try {
-      console.log('🚀 Loading active deployed prompt...');
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
-      const response = await fetch(`${backendUrl}/api/deployed-prompts?userId=${session.user.id}`, {
+      await fetch(`${backendUrl}/api/matches/trigger-finding`, {
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true'
-        }
+        },
+        body: JSON.stringify({ userId: session.user.id })
       });
-      
-      if (response.ok) {
-        const deployedPrompts = await response.json();
-        const activePrompt = deployedPrompts.find((p: any) => p.status === 'ACTIVE');
-        
-        if (activePrompt) {
-          console.log('✅ Found active deployed prompt:', activePrompt);
-          setActiveDeployedPrompt(activePrompt);
-          
-          // Convert to Prompt format for compatibility
-          const prompt = {
-            id: activePrompt.id,
-            theme: activePrompt.themeName,
-            question: activePrompt.question,
-            deployedAt: new Date(activePrompt.deployedAt)
-          };
-          setCurrentPrompt(prompt);
-        } else {
-          console.log('ℹ️ No active deployed prompt found');
-          setActiveDeployedPrompt(null);
-        }
-      } else {
-        console.error('❌ Failed to load deployed prompts');
-      }
+      console.log('🚀 Match finding triggered successfully');
     } catch (error) {
-      console.error('❌ Error loading active deployed prompt:', error);
-    } finally {
-      setLoadingDeployedPrompt(false);
+      console.error('❌ Failed to trigger match finding:', error);
     }
   };
+
+
+  // Update current prompt when active deployed prompt changes
+  useEffect(() => {
+    if (activeDeployedPrompt) {
+      console.log('✅ Found active deployed prompt:', activeDeployedPrompt);
+      const prompt = {
+        id: activeDeployedPrompt.id,
+        theme: activeDeployedPrompt.themeName,
+        question: activeDeployedPrompt.question,
+        deployedAt: new Date(activeDeployedPrompt.deployedAt)
+      };
+      setCurrentPrompt(prompt);
+    } else {
+      console.log('ℹ️ No active deployed prompt found');
+      setCurrentPrompt(null);
+    }
+  }, [activeDeployedPrompt]);
 
   const handlePromptUpdate = (prompt: Prompt | null) => {
     console.log('📝 Prompt updated:', prompt);
     setCurrentPrompt(prompt);
     
-    // If a new prompt was deployed, refresh the active deployed prompt
+    // If a new prompt was deployed, refresh the deployed prompts query
     if (prompt) {
-      loadActiveDeployedPrompt();
-      // TODO: Implement real matching system with existing users
+      queryClient.invalidateQueries({ queryKey: ['deployedPrompts', session?.user?.id] });
     } else {
-      // If prompt was cleared, also clear active deployed prompt
-      setActiveDeployedPrompt(null);
+      // If prompt was cleared, also refresh to get updated state
+      queryClient.invalidateQueries({ queryKey: ['deployedPrompts', session?.user?.id] });
     }
   };
 
@@ -146,15 +160,18 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
         </div>
 
         {/* MY PROMPT Section - Only show when no active deployed prompt */}
-        {!activeDeployedPrompt && (
+        {isInitialLoad ? (
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 animate-pulse">
+            <div className="h-6 bg-white/20 rounded mb-4"></div>
+            <div className="h-4 bg-white/20 rounded mb-2"></div>
+            <div className="h-4 bg-white/20 rounded w-3/4"></div>
+          </div>
+        ) : !activeDeployedPrompt ? (
           <MyPrompt 
             currentPrompt={currentPrompt}
             onPromptUpdate={handlePromptUpdate}
           />
-        )}
-
-        {/* Deployed Prompt Success Section */}
-        {activeDeployedPrompt && (
+        ) : (
           <DeployedPromptSuccess
             themeName={activeDeployedPrompt.themeName}
             question={activeDeployedPrompt.question}
@@ -164,11 +181,19 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
         )}
 
         {/* YOUR MATCHES Section */}
-        <YourMatches 
-          matches={matches}
-          hasMatchedToday={hasMatchedToday}
-          currentPrompt={currentPrompt}
-        />
+        {isInitialLoad ? (
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 animate-pulse">
+            <div className="h-6 bg-white/20 rounded mb-4"></div>
+            <div className="h-4 bg-white/20 rounded mb-2"></div>
+            <div className="h-4 bg-white/20 rounded w-2/3"></div>
+          </div>
+        ) : (
+          <YourMatches 
+            matches={matches}
+            hasMatchedToday={hasMatchedToday}
+            currentPrompt={currentPrompt}
+          />
+        )}
       </div>
 
     </div>
