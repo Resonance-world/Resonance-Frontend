@@ -24,7 +24,7 @@ export default function Home() {
           </div>
         </div>
         <p className="text-xl text-amber-100 max-w-lg mx-auto leading-relaxed drop-shadow-md">
-          Connect authentically, Unfold, one layer at a time
+          Connect through meaningful conversation you actually want to have
         </p>
       </div>
       

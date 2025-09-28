@@ -135,7 +135,7 @@ export const CirclesPage = () => {
         className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: 'url(/circles_background.png)',
-          filter: 'brightness(0.4) contrast(1.1)' // Less dark than onboarding (0.4)
+          filter: 'brightness(0.3) contrast(1.2)' // Darker filter for better consistency
         }}
       />
       
@@ -200,11 +200,13 @@ export const CirclesPage = () => {
                         </div>
                     )}
                     
-                    {/* Note - always displayed */}
-                    <div className="mt-4 text-center">
-                        <p className="text-white/70 text-sm">
-                            People in your private circle can see your private garden
-                        </p>
+                    {/* Note - always displayed in a box for consistency */}
+                    <div className="mt-4">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 text-center">
+                            <p className="text-white/80 text-sm">
+                                People in your private circle can see your private garden
+                            </p>
+                        </div>
                     </div>
                 </div>
             ) : (
