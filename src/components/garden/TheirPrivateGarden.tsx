@@ -92,7 +92,7 @@ export const TheirPrivateGarden = () => {
         const userProfile: GardenProfile = {
           id: userData.id,
           name: userData.name || userData.username,
-          profileImage: userData.profilePictureUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
+          profileImage: userData.privateProfilePictureUrl || userData.profilePictureUrl || '/profilePictureDefault-2.png',
           nftImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop&crop=center',
           essence: userData.essenceKeywords ? userData.essenceKeywords.split(',').map(s => s.trim()) : ['Creative', 'Thoughtful'],
           bio: userData.personalitySummary || "Building meaningful connections and exploring new possibilities.",
@@ -197,9 +197,9 @@ export const TheirPrivateGarden = () => {
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-3 mb-4">
             <h1 className="text-white text-3xl font-light italic">{profile.name}</h1>
-            <span className="bg-amber-800/80 text-white px-3 py-1 rounded-lg text-sm">
+            {/* <span className="bg-amber-800/80 text-white px-3 py-1 rounded-lg text-sm">
               Collaborator
-            </span>
+            </span> */}
           </div>
         </div>
 
@@ -222,7 +222,7 @@ export const TheirPrivateGarden = () => {
         {/* Essences Section */}
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-6 border border-white/20">
           <div className="text-center mb-4">
-            <div className="text-gray-400 text-sm mb-2">My essences are rooted in...</div>
+            <div className="text-gray-400 text-sm mb-2">Their essences are rooted in...</div>
             <div className="flex justify-center gap-2 mb-4">
               {profile.essence.map((essence, index) => (
                 <span
@@ -258,7 +258,7 @@ export const TheirPrivateGarden = () => {
         {/* My Why Section */}
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-6 border border-white/20">
           <div className="flex items-center gap-2 mb-3">
-            <h3 className="text-white font-medium">MY WHY</h3>
+            <h3 className="text-white font-medium">THEIR WHY</h3>
           </div>
           <div>
             <p className="text-white text-sm leading-relaxed">
@@ -274,25 +274,11 @@ export const TheirPrivateGarden = () => {
             <span className="text-xl">👁️</span>
           </div>
           <div className="text-white text-sm leading-relaxed mb-3">
-            {matchData ? (
-              <>
-                <p>You and {profile.name} matched on {matchData.deployedAt ? new Date(matchData.deployedAt).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                }) : 'an unknown date'} through prompt '{matchData.question || 'Unknown prompt'}'</p>
-                <p>The conversation went well and you find {profile.name} intriguing. You discussed about {(matchData.category || 'various topics').toLowerCase()}.</p>
-              </>
-            ) : (
-              <>
-                <p>You and {profile.name} haven't matched yet.</p>
-                <p>Start a conversation to build your connection and create reflections together.</p>
-              </>
-            )}
+            <p>Reflect on this encounter to uncover more layers of your connection.</p>
           </div>
           <button 
             onClick={() => setShowReflectionModal(true)}
-            className="bg-amber-800/80 hover:bg-amber-900/90 text-white border border-amber-700/50 hover:border-amber-600/70 rounded-lg px-4 py-2 w-full flex items-center justify-center gap-2 transition-all duration-300"
+            className="bg-[#4a342a]/80 hover:bg-[#553c30]/90 text-white border border-[#553c30]/50 hover:border-[#4a342a]/70 rounded-lg px-4 py-2 w-full flex items-center justify-center gap-2 transition-all duration-300"
           >
             <span>Reflect on Conversation</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -304,18 +290,19 @@ export const TheirPrivateGarden = () => {
         {/* Social Links */}
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-6 border border-white/20">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white font-medium">MY SOCIALS</h3>
+            <h3 className="text-white font-medium">THEIR SOCIALS</h3>
           </div>
           
           <div className="space-y-3">
             {[
-              { key: 'telegram', label: 'Telegram', value: 'tessla' },
-              { key: 'instagram', label: 'Instagram', value: 'tessaractt_' },
-              { key: 'baseFarcaster', label: 'Base', value: 'tessla.farcaster.eth' },
-              { key: 'sora', label: 'Sora', value: 'tessaract' },
-              { key: 'x', label: 'X', value: 'tesslaoxo' },
-              { key: 'website', label: 'Website', value: 'www.tessla.me' }
-            ].map(({ key, label, value }) => (
+              { key: 'telegram', label: 'Telegram', value: profile.socialLinks?.telegram },
+              { key: 'instagram', label: 'Instagram', value: profile.socialLinks?.instagram },
+              { key: 'baseFarcaster', label: 'Base', value: profile.socialLinks?.baseFarcaster },
+              { key: 'zora', label: 'Zora', value: profile.socialLinks?.zora },
+              { key: 'linkedin', label: 'LinkedIn', value: profile.socialLinks?.linkedin },
+              { key: 'x', label: 'X', value: profile.socialLinks?.x },
+              { key: 'website', label: 'Website', value: profile.socialLinks?.website }
+            ].filter(({ value }) => value && value.trim() !== '').map(({ key, label, value }) => (
               <div key={key} className="flex justify-between items-center">
                 <span className="text-gray-400 text-sm">{label}</span>
                 <span className="text-white text-sm">{value}</span>
@@ -336,7 +323,7 @@ export const TheirPrivateGarden = () => {
             </p>
             <button
               onClick={() => setShowReflectionModal(false)}
-              className="w-full bg-amber-800/80 hover:bg-amber-900/90 text-white rounded-lg px-4 py-2 transition-colors"
+              className="w-full bg-[#4a342a]/80 hover:bg-[#553c30]/90 text-white rounded-lg px-4 py-2 transition-colors"
             >
               Close
             </button>

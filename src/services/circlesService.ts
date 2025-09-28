@@ -20,6 +20,7 @@ export interface UserProfile {
   id: string;
   username: string;
   profilePictureUrl: string | null;
+  privateProfilePictureUrl: string | null;
   isVerified: boolean;
   lastActiveAt: string;
   name: string | null;
