@@ -156,11 +156,11 @@ export const ProfilePictureUpload = ({ currentImage, onImageChange }: ProfilePic
       />
 
       {/* Upload instructions */}
-      <div className="mt-4 text-center">
+      {/* <div className="mt-4 text-center">
         <p className="text-gray-400 text-xs">
           📸 Upload a square image for best results (max 2MB)
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }; 

@@ -211,7 +211,7 @@ export const PrivateGarden = () => {
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
         </button>
-        <h1 className="text-white text-lg font-medium">{profile.name}&apos;s Private Garden</h1>
+        <h1 className="text-white text-lg font-medium">My Private Garden</h1>
         <div className="w-6"></div> {/* Spacer for centering */}
       </div>
 
