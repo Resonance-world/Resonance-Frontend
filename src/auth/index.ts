@@ -83,7 +83,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               profilePictureUrl: userInfo.profilePictureUrl
             }),
           });
-
+          console.log('verifyResponse', verifyResponse)
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json();
             console.log('✅ User registered in backend:', verifyData.user.id);
@@ -104,6 +104,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             };
           }
         } catch (error) {
+          console.log('verifyResponse', verifyResponse, "error" , error);
           console.error('❌ Backend registration error:', error);
           // Fallback to wallet address as ID
           return {
