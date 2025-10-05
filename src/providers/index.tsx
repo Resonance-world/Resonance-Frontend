@@ -36,10 +36,12 @@ export default function ClientProviders({
 }: ClientProvidersProps) {
   console.log('🏗️ Initializing ClientProviders with MiniKit...');
   
+  const appId = process.env.NEXT_PUBLIC_APP_ID as `app_${string}`;
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ErudaProvider>
-        <MiniKitProvider>
+        <MiniKitProvider appId={appId}>
           <SessionProvider session={session}>{children}</SessionProvider>
         </MiniKitProvider>
       </ErudaProvider>
