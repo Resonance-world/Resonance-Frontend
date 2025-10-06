@@ -26,8 +26,13 @@ declare module 'next-auth' {
 // Auth configuration for Wallet Auth based sessions
 // For more information on each option (and a full list of options) go to
 // https://authjs.dev/getting-started/authentication/credentials
+// Debug environment variables
+console.log('🔐 Auth Environment Variables:');
+console.log('AUTH_SECRET:', process.env.AUTH_SECRET ? 'SET' : 'NOT SET');
+console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET');
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
   providers: [
     Credentials({
