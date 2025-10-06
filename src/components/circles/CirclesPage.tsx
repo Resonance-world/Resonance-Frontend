@@ -25,7 +25,7 @@ export const CirclesPage = () => {
   const relationshipId = searchParams.get('relationshipId');
   
   // Get user IDs from matched users (excluding current user)
-  const userIds = matchedUsersData?.users?.filter(user => user.id !== session?.user?.id).map(user => user.id) || [];
+  const userIds = matchedUsersData?.users?.filter((user: any) => user.id !== session?.user?.id).map((user: any) => user.id) || [];
   const {data: unreadData} = useGetUnreadMessages(session?.user?.id, userIds);
   
   // Load private relationships on component mount
@@ -176,7 +176,7 @@ export const CirclesPage = () => {
                 // Private section with empty state
                 <div className="max-w-sm mx-auto">
                     {/* Empty state - only show when private circle is empty */}
-                    {matchedUsersData?.users?.filter(user => user.id !== session?.user?.id).length === 0 ? (
+                    {matchedUsersData?.users?.filter((user: any) => user.id !== session?.user?.id).length === 0 ? (
                         <div className="bg-white/10 border border-white/20 rounded-lg p-6 text-center">
                             <p className="text-white text-lg font-medium mb-2">
                                 Add more people to your private circle

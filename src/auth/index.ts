@@ -84,9 +84,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              nullifier_hash: finalPayload.nullifier_hash,
-              verification_level: finalPayload.verification_level,
-              action: finalPayload.action,
+              nullifier_hash: (finalPayload as any).nullifier_hash,
+              verification_level: (finalPayload as any).verification_level,
+              action: (finalPayload as any).action,
               walletAddress: finalPayload.address,
               username: userInfo.username,
               profilePictureUrl: userInfo.profilePictureUrl
@@ -100,26 +100,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // Return user with backend-generated ID
             return {
               id: verifyData.user.id, // Use backend-generated user ID
-              walletAddress: finalPayload.address,
               ...userInfo,
+              walletAddress: finalPayload.address, // Ensure walletAddress is from finalPayload
             };
           } else {
             console.error('❌ Failed to register user in backend');
             // Fallback to wallet address as ID
             return {
               id: finalPayload.address,
-              walletAddress: finalPayload.address,
               ...userInfo,
+              walletAddress: finalPayload.address, // Ensure walletAddress is from finalPayload
             };
           }
         } catch (error) {
-          console.log('verifyResponse', verifyResponse, "error" , error);
           console.error('❌ Backend registration error:', error);
           // Fallback to wallet address as ID
           return {
             id: finalPayload.address,
-            walletAddress: finalPayload.address,
             ...userInfo,
+            walletAddress: finalPayload.address, // Ensure walletAddress is from finalPayload
           };
         }
       },
