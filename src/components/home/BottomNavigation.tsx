@@ -47,7 +47,7 @@ export const BottomNavigation = ({ currentPage }: BottomNavigationProps) => {
     {
       id: 'garden',
       name: '',
-      href: '/garden/public',
+      href: '/garden',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           {/* Garden/plant icon */}
