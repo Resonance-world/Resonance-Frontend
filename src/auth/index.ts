@@ -30,9 +30,13 @@ declare module 'next-auth' {
 console.log('🔐 Auth Environment Variables:');
 console.log('AUTH_SECRET:', process.env.AUTH_SECRET ? 'SET' : 'NOT SET');
 console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET');
+console.log('All env keys:', Object.keys(process.env).filter(key => key.includes('AUTH') || key.includes('SECRET')));
+
+// Fallback secret if both are undefined
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  secret: authSecret,
   session: { strategy: 'jwt' },
   providers: [
     Credentials({
