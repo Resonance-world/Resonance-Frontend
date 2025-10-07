@@ -30,10 +30,23 @@ declare module 'next-auth' {
 console.log('🔐 Auth Environment Variables:');
 console.log('AUTH_SECRET:', process.env.AUTH_SECRET ? 'SET' : 'NOT SET');
 console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET');
-console.log('All env keys:', Object.keys(process.env).filter(key => key.includes('AUTH') || key.includes('SECRET')));
+console.log('NEXT_PUBLIC_BACKEND_URL:', process.env.NEXT_PUBLIC_BACKEND_URL || 'NOT SET');
+console.log('NEXT_PUBLIC_APP_ID:', process.env.NEXT_PUBLIC_APP_ID || 'NOT SET');
+console.log('All env keys:', Object.keys(process.env).filter(key => key.includes('AUTH') || key.includes('SECRET') || key.includes('BACKEND') || key.includes('APP_ID')));
 
 // Fallback secret if both are undefined
 const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development';
+
+// Warn if critical environment variables are missing
+if (!process.env.AUTH_SECRET && !process.env.NEXTAUTH_SECRET) {
+  console.warn('⚠️ WARNING: No AUTH_SECRET or NEXTAUTH_SECRET found! Using fallback secret.');
+}
+if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
+  console.warn('⚠️ WARNING: NEXT_PUBLIC_BACKEND_URL not set! Using localhost fallback.');
+}
+if (!process.env.NEXT_PUBLIC_APP_ID) {
+  console.warn('⚠️ WARNING: NEXT_PUBLIC_APP_ID not set! This may cause World App integration issues.');
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: authSecret,
