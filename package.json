@@ -27,7 +27,6 @@
     "axios": "^1.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "enhanced-resolve": "^5.15.0",
     "iconoir-react": "^7.11.0",
     "lucide-react": "^0.540.0",
     "next": "15.2.3",
@@ -37,7 +36,6 @@
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
-    "vercel": "^48.2.0",
     "viem": "2.23.5"
   },
   "devDependencies": {

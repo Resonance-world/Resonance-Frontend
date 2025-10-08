@@ -1,4 +1,14 @@
-import { ConversationChat } from '@/components/conversation/ConversationChat';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for better bundle splitting - conversation chat is heavy with real-time features
+const ConversationChat = dynamic(
+  () => import('@/components/conversation/ConversationChat').then(mod => ({ default: mod.ConversationChat })),
+  {
+    loading: () => <div className="flex items-center justify-center min-h-screen">Loading conversation...</div>,
+    ssr: false
+  }
+);
+
 interface ConversationPageProps {
   params: Promise<{
     id: string;

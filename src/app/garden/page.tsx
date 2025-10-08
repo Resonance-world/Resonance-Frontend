@@ -8,3 +8,5 @@ import { MyPublicGarden } from '@/components/garden/MyPublicGarden';
 export default function GardenRoute() {
   return <MyPublicGarden />;
 }
+
+

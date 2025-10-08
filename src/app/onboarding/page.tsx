@@ -1,5 +1,14 @@
 import { auth } from '@/auth';
-import { ChatbotOnboarding } from '@/components/onboarding/ChatbotOnboarding';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for better bundle splitting - onboarding is heavy with chatbot logic
+const ChatbotOnboarding = dynamic(
+  () => import('@/components/onboarding/ChatbotOnboarding').then(mod => ({ default: mod.ChatbotOnboarding })),
+  {
+    loading: () => <div className="flex items-center justify-center min-h-screen">Loading onboarding...</div>,
+    ssr: false
+  }
+);
 
 /**
  * Main onboarding page with conversational chatbot interface

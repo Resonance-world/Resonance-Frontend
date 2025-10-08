@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ProfileCard } from './ProfileCard';
-// import { useGetAllUsers } from '@/api/users/useGetAllUsers/useGetAllUsers';
 import { useMatchedUsers } from '@/api/matches/useMatchedUsers';
 import { useGetUnreadMessages } from '@/api/messages/useGetUnreadMessages';
 import { relationshipsService } from '@/services/relationshipsService';
@@ -18,7 +17,6 @@ export const CirclesPage = () => {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [privateUsers, setPrivateUsers] = useState<string[]>([]); // Array of user IDs in private circle
-  // const {data: circles, isFetching, error} = useGetAllUsers(session?.user?.id);
   const {data: matchedUsersData, isFetching, error} = useMatchedUsers(session?.user?.id);
   
   // Handle relationshipId parameter from confirmed matches

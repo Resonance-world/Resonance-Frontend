@@ -1,5 +1,14 @@
 import { auth } from '@/auth';
-import { LivingRoom } from '@/components/home/LivingRoom';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for better code splitting - LivingRoom is a heavy component
+const LivingRoom = dynamic(
+  () => import('@/components/home/LivingRoom').then(mod => ({ default: mod.LivingRoom })),
+  {
+    loading: () => <div className="flex items-center justify-center min-h-screen">Loading home...</div>,
+    ssr: false
+  }
+);
 
 /**
  * Home page - Main living room interface

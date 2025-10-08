@@ -30,7 +30,6 @@ interface LivingRoomProps {
  */
 export const LivingRoom = ({ session }: LivingRoomProps) => {
   const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
-  const [hasMatchedToday] = useState(false);
   
   const queryClient = useQueryClient();
   

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 
 interface ProfilePictureUploadProps {
   currentImage: string;
@@ -93,10 +94,11 @@ export const ProfilePictureUpload = ({ currentImage, onImageChange }: ProfilePic
       {/* Current Image */}
       <div className="relative w-full max-w-sm mx-auto">
         <div className="aspect-square rounded-lg overflow-hidden">
-          <img
+          <Image
             src={currentImage}
             alt="Profile picture"
-            className={`w-full h-full object-cover transition-opacity ${
+            fill
+            className={`object-cover transition-opacity ${
               isUploading ? 'opacity-50' : 'opacity-100'
             }`}
             onError={(e) => {
@@ -108,6 +110,10 @@ export const ProfilePictureUpload = ({ currentImage, onImageChange }: ProfilePic
               console.log('✅ Image loaded successfully');
               setImageError(false);
             }}
+            // Optimize for profile pictures
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority={false}
+            quality={85}
           />
           
           {/* Loading overlay */}

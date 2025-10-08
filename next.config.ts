@@ -4,6 +4,16 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['static.usernames.app-backend.toolsforhumanity.com', 'images.unsplash.com'],
     formats: ['image/webp', 'image/avif'],
+    // Optimize image loading performance
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Enable lazy loading by default
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Optimize for mobile performance
+    minimumCacheTTL: 60,
+    // Enable modern formats
+    unoptimized: false,
   },
   // Remove allowedDevOrigins for security
   reactStrictMode: true, // Enable for better development experience
@@ -18,7 +28,16 @@ const nextConfig: NextConfig = {
   },
   // Add performance optimizations
   experimental: {
-    optimizePackageImports: ['@worldcoin/minikit-js', 'socket.io-client'],
+    optimizePackageImports: [
+      '@worldcoin/minikit-js', 
+      '@worldcoin/minikit-react',
+      '@worldcoin/mini-apps-ui-kit-react',
+      'socket.io-client',
+      '@tanstack/react-query',
+      'iconoir-react',
+      'lucide-react',
+      'axios'
+    ],
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
