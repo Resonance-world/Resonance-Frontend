@@ -5,8 +5,7 @@ import dynamic from 'next/dynamic';
 const LivingRoom = dynamic(
   () => import('@/components/home/LivingRoom').then(mod => ({ default: mod.LivingRoom })),
   {
-    loading: () => <div className="flex items-center justify-center min-h-screen">Loading home...</div>,
-    ssr: false
+    loading: () => <div className="flex items-center justify-center min-h-screen">Loading home...</div>
   }
 );
 

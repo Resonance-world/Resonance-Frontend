@@ -4,8 +4,7 @@ import dynamic from 'next/dynamic';
 const TheirPrivateGarden = dynamic(
   () => import('@/components/garden/TheirPrivateGarden').then(mod => ({ default: mod.TheirPrivateGarden })),
   {
-    loading: () => <div className="flex items-center justify-center min-h-screen">Loading...</div>,
-    ssr: false
+    loading: () => <div className="flex items-center justify-center min-h-screen">Loading...</div>
   }
 );
 

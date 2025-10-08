@@ -4,8 +4,7 @@ import dynamic from 'next/dynamic';
 const CirclesPage = dynamic(
   () => import('@/components/circles/CirclesPage').then(mod => ({ default: mod.CirclesPage })),
   {
-    loading: () => <div className="flex items-center justify-center min-h-screen">Loading circles...</div>,
-    ssr: false
+    loading: () => <div className="flex items-center justify-center min-h-screen">Loading circles...</div>
   }
 );
 

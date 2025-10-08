@@ -5,8 +5,7 @@ import dynamic from 'next/dynamic';
 const ChatbotOnboarding = dynamic(
   () => import('@/components/onboarding/ChatbotOnboarding').then(mod => ({ default: mod.ChatbotOnboarding })),
   {
-    loading: () => <div className="flex items-center justify-center min-h-screen">Loading onboarding...</div>,
-    ssr: false
+    loading: () => <div className="flex items-center justify-center min-h-screen">Loading onboarding...</div>
   }
 );
 

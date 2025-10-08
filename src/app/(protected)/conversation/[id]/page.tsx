@@ -4,8 +4,7 @@ import dynamic from 'next/dynamic';
 const ConversationChat = dynamic(
   () => import('@/components/conversation/ConversationChat').then(mod => ({ default: mod.ConversationChat })),
   {
-    loading: () => <div className="flex items-center justify-center min-h-screen">Loading conversation...</div>,
-    ssr: false
+    loading: () => <div className="flex items-center justify-center min-h-screen">Loading conversation...</div>
   }
 );
 
