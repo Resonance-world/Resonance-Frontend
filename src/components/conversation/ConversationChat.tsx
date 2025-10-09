@@ -159,8 +159,20 @@ export const ConversationChat = ({
       // Listen for new messages
       newSocket.on('newMessage', (message: ConversationMessage) => {
         console.log('📨 Received new message:', message);
-        // Refetch messages to update the UI
-        refetch();
+        // Update cache directly to replace optimistic message with real one
+        queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
+          if (!oldData) return [message];
+          // Replace optimistic message with real message if it's from current user
+          if (message.senderId === currentUserId) {
+            return oldData.map((msg: ConversationMessage) => 
+              msg.id.startsWith('optimistic-') && msg.senderId === currentUserId 
+                ? message 
+                : msg
+            );
+          }
+          // Add new message from other user
+          return [...oldData, message];
+        });
       });
 
       setSocket(newSocket);
@@ -196,8 +208,8 @@ export const ConversationChat = ({
     setNewMessage(''); // Clear input immediately
 
     // Add message to UI immediately (optimistic update)
-    const tempMessage: ConversationMessage = {
-      id: `temp-${Date.now()}`,
+    const optimisticMessage: ConversationMessage = {
+      id: `optimistic-${Date.now()}-${Math.random()}`,
       senderId: currentUserId!,
       senderName: 'You',
       content: messageContent,
@@ -205,10 +217,10 @@ export const ConversationChat = ({
       type: 'text'
     };
 
-    // Add to cache immediately
+    // Add to cache immediately for instant display
     queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
-      if (!oldData) return [tempMessage];
-      return [...oldData, tempMessage];
+      if (!oldData) return [optimisticMessage];
+      return [...oldData, optimisticMessage];
     });
 
     // Send via WebSocket for real-time delivery
