@@ -159,14 +159,11 @@ export const ConversationChat = ({
       // Listen for new messages
       newSocket.on('newMessage', (message: ConversationMessage) => {
         console.log('📨 Received new message:', message);
-        // Update React Query cache directly instead of refetching
+        // Update React Query cache directly
         queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
           if (!oldData) return oldData;
-          // Add the new message to the existing messages
-          return {
-            ...oldData,
-            messages: [...(oldData.messages || []), message]
-          };
+          // Add the new message to the existing messages array
+          return [...(oldData || []), message];
         });
       });
 
@@ -199,25 +196,48 @@ export const ConversationChat = ({
     setIsSubmitting(true);
     console.log('📤 Sending message:', newMessage);
 
+    const messageContent = newMessage.trim();
+    setNewMessage(''); // Clear input immediately
+
+    // Create optimistic message for immediate UI update
+    const optimisticMessage: ConversationMessage = {
+      id: Date.now().toString(),
+      senderId: currentUserId!,
+      senderName: 'You',
+      content: messageContent,
+      timestamp: new Date(),
+      type: 'text'
+    };
+
+    // Add optimistic message to cache immediately
+    queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
+      if (!oldData) return [optimisticMessage];
+      return [...oldData, optimisticMessage];
+    });
+
     // Send via WebSocket for real-time delivery
     socket?.emit('wsMessage', {
-      content: newMessage.trim(),
+      content: messageContent,
       receiverId: participantId,
     });
 
-    // Also send via HTTP for persistence (but don't refetch on success)
+    // Also send via HTTP for persistence
     try {
       await mutation.mutateAsync({
         receiverId: participantId,
-        content: newMessage.trim(),
+        content: messageContent,
         userId: currentUserId!
       });
       console.log('✅ Message sent successfully');
     } catch (error) {
       console.error('❌ Failed to send message:', error);
+      // Remove optimistic message on error
+      queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
+        if (!oldData) return oldData;
+        return oldData.filter((msg: ConversationMessage) => msg.id !== optimisticMessage.id);
+      });
     }
 
-    setNewMessage('');
     setIsSubmitting(false);
   };
 
