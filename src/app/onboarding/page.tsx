@@ -1,11 +1,15 @@
-import { auth } from '@/auth';
+'use client';
+
 import dynamic from 'next/dynamic';
+import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useSession } from 'next-auth/react';
 
 // Dynamic import for better bundle splitting - onboarding is heavy with chatbot logic
 const ChatbotOnboarding = dynamic(
   () => import('@/components/onboarding/ChatbotOnboarding').then(mod => ({ default: mod.ChatbotOnboarding })),
   {
-    loading: () => <div className="flex items-center justify-center min-h-screen">Loading onboarding...</div>
+    loading: () => <PageLoadingSpinner text="Loading onboarding..." />,
+    ssr: false // Disable SSR to prevent hydration issues
   }
 );
 
@@ -14,8 +18,8 @@ const ChatbotOnboarding = dynamic(
  * Based on Figma wireframes - dark theme chat experience
  * Supports both authenticated users and guest mode for development
  */
-export default async function OnboardingPage() {
-  const session = await auth();
+export default function OnboardingPage() {
+  const { data: session } = useSession();
 
   // Allow both authenticated users and guests to access onboarding
   // This enables development/testing without requiring World App authentication

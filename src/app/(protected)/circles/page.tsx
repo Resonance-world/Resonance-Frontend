@@ -1,3 +1,5 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
 
@@ -5,7 +7,8 @@ import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
 const CirclesPage = dynamic(
   () => import('@/components/circles/CirclesPage').then(mod => ({ default: mod.CirclesPage })),
   {
-    loading: () => <PageLoadingSpinner text="Loading your circles..." />
+    loading: () => <PageLoadingSpinner text="Loading your circles..." />,
+    ssr: false // Disable SSR to prevent hydration issues
   }
 );
 
