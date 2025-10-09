@@ -1,11 +1,12 @@
 import { auth } from '@/auth';
 import dynamic from 'next/dynamic';
+import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Dynamic import for better code splitting - LivingRoom is a heavy component
 const LivingRoom = dynamic(
   () => import('@/components/home/LivingRoom').then(mod => ({ default: mod.LivingRoom })),
   {
-    loading: () => <div className="flex items-center justify-center min-h-screen">Loading home...</div>
+    loading: () => <PageLoadingSpinner text="Loading your space..." />
   }
 );
 

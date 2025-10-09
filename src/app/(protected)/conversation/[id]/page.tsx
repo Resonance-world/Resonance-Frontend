@@ -1,10 +1,11 @@
 import dynamic from 'next/dynamic';
+import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Dynamic import for better bundle splitting - conversation chat is heavy with real-time features
 const ConversationChat = dynamic(
   () => import('@/components/conversation/ConversationChat').then(mod => ({ default: mod.ConversationChat })),
   {
-    loading: () => <div className="flex items-center justify-center min-h-screen">Loading conversation...</div>
+    loading: () => <PageLoadingSpinner text="Loading conversation..." />
   }
 );
 

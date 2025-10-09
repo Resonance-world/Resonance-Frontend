@@ -1,10 +1,11 @@
 import dynamic from 'next/dynamic';
+import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Dynamic import for better code splitting - CirclesPage is heavy with drag-drop functionality
 const CirclesPage = dynamic(
   () => import('@/components/circles/CirclesPage').then(mod => ({ default: mod.CirclesPage })),
   {
-    loading: () => <div className="flex items-center justify-center min-h-screen">Loading circles...</div>
+    loading: () => <PageLoadingSpinner text="Loading your circles..." />
   }
 );
 

@@ -47,7 +47,7 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
       const response = await fetch(`${backendUrl}/api/deployed-prompts?userId=${session.user.id}`, {
         headers: {
           'ngrok-skip-browser-warning': 'true',
-          'Cache-Control': 'max-age=30'
+          'Cache-Control': 'max-age=300' // Increased cache time to 5 minutes
         }
       });
       
@@ -58,8 +58,10 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
       return response.json();
     },
     enabled: !!session?.user?.id,
-    staleTime: 30000, // Consider data stale after 30 seconds
+    staleTime: 300000, // Consider data stale after 5 minutes
     refetchOnWindowFocus: false,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 1000, // Faster retry
   });
   
   // Use enhanced matching hooks with conditional polling

@@ -39,6 +39,8 @@ const nextConfig: NextConfig = {
       'axios'
     ],
   },
+  // Enable SWC minification for better performance
+  swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
