@@ -42,7 +42,7 @@ export const ConversationChat = ({
   const { data: conversationMessages, isFetching: isFetchingConvMessages, error: convMessagesError, refetch } = useGetMessagesByConversation(participantId, currentUserId);
   const mutation = useWriteMessage(refetch);
 
-  // Check garden access when participant changes
+  // Check garden access when participant changes (non-blocking)
   useEffect(() => {
     const checkGardenAccess = async () => {
       if (participantId && currentUserId) {
@@ -60,6 +60,7 @@ export const ConversationChat = ({
       }
     };
 
+    // Run garden access check in background (non-blocking)
     checkGardenAccess();
   }, [participantId, currentUserId]);
 
@@ -110,55 +111,71 @@ export const ConversationChat = ({
     }
   }, [currentUserId, participantId]);
 
+  // WebSocket connection setup (non-blocking)
   useEffect(() => {
     if (!currentUserId) {
       console.log('🔌 No currentUserId, skipping WebSocket connection');
       return;
     }
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
-    const newSocket = io(backendUrl, {
-      query: {
-        userId: currentUserId
-      },
-      transports: ['websocket', 'polling'],
-      timeout: 20000,
-      forceNew: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000
-    });
+    let currentSocket: Socket | null = null;
 
-    newSocket.on('connect', () => {
-      console.log('🔌 Connected to WebSocket server');
-      setIsConnected(true);
-    });
+    // Set up WebSocket connection in background
+    const setupWebSocket = async () => {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+      const newSocket = io(backendUrl, {
+        query: {
+          userId: currentUserId
+        },
+        transports: ['websocket', 'polling'],
+        timeout: 10000, // Reduced timeout for faster fallback
+        forceNew: true,
+        reconnection: true,
+        reconnectionAttempts: 3, // Reduced attempts
+        reconnectionDelay: 500 // Faster reconnection
+      });
 
-    newSocket.on('connect_error', (error) => {
-      console.error('🔌 WebSocket connection error:', error);
-    });
+      currentSocket = newSocket; // Store reference for cleanup
 
-    newSocket.on('disconnect', (reason) => {
-      console.log('🔌 Disconnected from WebSocket server, reason:', reason);
-      setIsConnected(false);
-    });
+      newSocket.on('connect', () => {
+        console.log('🔌 Connected to WebSocket server');
+        setIsConnected(true);
+      });
 
-    newSocket.on('reply', (data) => {
-      console.log('📨 Received reply:', data);
-    });
+      newSocket.on('connect_error', (error) => {
+        console.error('🔌 WebSocket connection error:', error);
+        setIsConnected(false);
+      });
 
-    // Listen for new messages
-    newSocket.on('newMessage', (message: ConversationMessage) => {
-      console.log('📨 Received new message:', message);
-      // Refetch messages to update the UI
-      refetch();
-    });
+      newSocket.on('disconnect', (reason) => {
+        console.log('🔌 Disconnected from WebSocket server, reason:', reason);
+        setIsConnected(false);
+      });
 
-    setSocket(newSocket);
+      newSocket.on('reply', (data) => {
+        console.log('📨 Received reply:', data);
+      });
+
+      // Listen for new messages
+      newSocket.on('newMessage', (message: ConversationMessage) => {
+        console.log('📨 Received new message:', message);
+        // Refetch messages to update the UI
+        refetch();
+      });
+
+      setSocket(newSocket);
+    };
+
+    // Run WebSocket setup in background
+    setupWebSocket().catch(error => {
+      console.error('❌ Error setting up WebSocket:', error);
+    });
 
     return () => {
-      console.log('🔌 Cleaning up WebSocket connection');
-      newSocket.disconnect();
+      if (currentSocket) {
+        console.log('🔌 Cleaning up WebSocket connection');
+        currentSocket.disconnect();
+      }
     };
   }, [currentUserId, refetch]);
 
@@ -211,7 +228,8 @@ export const ConversationChat = ({
     router.back();
   };
 
-  if (isFetching || isFetchingConvMessages || userLoading || !currentUserId){
+  // Only show loading if essential data is missing
+  if (userLoading || !currentUserId){
     return (
       <div className="fixed inset-0 w-full h-full flex items-center justify-center">
         {/* Garden Background */}
@@ -238,6 +256,33 @@ export const ConversationChat = ({
   }
   console.log(conversationMessages, "messages");
   console.log('chat User data logs:', chatUser);
+
+  // Show loading state for chat user if still fetching
+  if (isFetching && !chatUser) {
+    return (
+      <div className="fixed inset-0 w-full h-full flex items-center justify-center">
+        {/* Garden Background */}
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/garden_background.png)',
+            filter: 'brightness(0.3) contrast(1.2)',
+          }}
+        />
+        
+        {/* Dark Overlay */}
+        <div className="fixed inset-0 bg-black/40" />
+        
+        {/* Loading Content */}
+        <div className="relative z-10 flex items-center justify-center">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading conversation...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
 
 

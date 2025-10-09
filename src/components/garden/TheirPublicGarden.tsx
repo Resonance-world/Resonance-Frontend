@@ -82,21 +82,24 @@ export const TheirPublicGarden = () => {
           isPublic: true,
           worldId: `@${userData.username}`,
           socialLinks: {
-            telegram: userData.telegramHandle,
-            instagram: userData.instagramHandle,
-            baseFarcaster: userData.baseFarcasterHandle,
-            zora: userData.zoraHandle,
-            linkedin: userData.linkedinHandle,
-            x: userData.xHandle,
-            website: userData.websiteUrl
+            telegram: userData.telegramHandle ?? undefined,
+            instagram: userData.instagramHandle ?? undefined,
+            baseFarcaster: userData.baseFarcasterHandle ?? undefined,
+            zora: userData.zoraHandle ?? undefined,
+            linkedin: userData.linkedinHandle ?? undefined,
+            x: userData.xHandle ?? undefined,
+            website: userData.websiteUrl ?? undefined
           }
         };
 
         setProfile(userProfile);
+        setLoading(false); // Set loading to false immediately after profile is set
         
-        // Fetch match data if we have a current user session
+        // Fetch match data in background (non-blocking)
         if (session?.user?.id) {
-          await fetchMatchData(session.user.id, userData.id);
+          fetchMatchData(session.user.id, userData.id).catch(error => {
+            console.error('❌ Error fetching match data:', error);
+          });
         }
         
         // Check if user is mutual friend (mock logic for now)

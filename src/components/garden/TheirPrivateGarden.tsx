@@ -110,10 +110,13 @@ export const TheirPrivateGarden = () => {
         };
 
         setProfile(userProfile);
+        setLoading(false); // Set loading to false immediately after profile is set
         
-        // Fetch match data if we have a current user session
+        // Fetch match data in background (non-blocking)
         if (session?.user?.id) {
-          await fetchMatchData(session.user.id, userData.id);
+          fetchMatchData(session.user.id, userData.id).catch(error => {
+            console.error('❌ Error fetching match data:', error);
+          });
         }
         
       } catch (error) {
