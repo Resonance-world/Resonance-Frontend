@@ -195,6 +195,22 @@ export const ConversationChat = ({
     const messageContent = newMessage.trim();
     setNewMessage(''); // Clear input immediately
 
+    // Add message to UI immediately (optimistic update)
+    const tempMessage: ConversationMessage = {
+      id: `temp-${Date.now()}`,
+      senderId: currentUserId!,
+      senderName: 'You',
+      content: messageContent,
+      timestamp: new Date(),
+      type: 'text'
+    };
+
+    // Add to cache immediately
+    queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
+      if (!oldData) return [tempMessage];
+      return [...oldData, tempMessage];
+    });
+
     // Send via WebSocket for real-time delivery
     socket?.emit('wsMessage', {
       content: messageContent,
