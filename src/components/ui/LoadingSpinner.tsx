@@ -29,7 +29,9 @@ export const LoadingSpinner = ({
 
 export const PageLoadingSpinner = ({ text = 'Loading page...' }: { text?: string }) => (
   <div className="min-h-screen flex items-center justify-center bg-black/40">
-    <LoadingSpinner size="lg" text={text} />
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
+      <LoadingSpinner size="lg" text={text} />
+    </div>
   </div>
 );
 
