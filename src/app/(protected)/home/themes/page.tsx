@@ -34,7 +34,8 @@ export default function ThemesPage() {
       
       const response = await fetch(`${backendUrl}/api/themes`, {
         headers: {
-          'ngrok-skip-browser-warning': 'true'
+          'ngrok-skip-browser-warning': 'true',
+          'Cache-Control': 'max-age=600' // 10 minutes cache for themes
         }
       });
       

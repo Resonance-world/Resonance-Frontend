@@ -47,7 +47,8 @@ export default function PromptsPage() {
       
       const response = await fetch(`${backendUrl}/api/themes/${themeId}/prompts`, {
         headers: {
-          'ngrok-skip-browser-warning': 'true'
+          'ngrok-skip-browser-warning': 'true',
+          'Cache-Control': 'max-age=600' // 10 minutes cache for prompts
         }
       });
       

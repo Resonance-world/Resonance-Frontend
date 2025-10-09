@@ -13,7 +13,8 @@ export const useGetMessagesByConversation = (id: string, userId?: string) => {
             try {
                 const response = await fetch(`${apiUrl}/api/messages/get-conv-messages/${id}?userId=${userId}`, {
                     headers: {
-                        'ngrok-skip-browser-warning': 'true'
+                        'ngrok-skip-browser-warning': 'true',
+                        'Cache-Control': 'max-age=60' // 1 minute cache for messages
                     }
                 });
                 console.log('🔍 Response status:', response.status);
@@ -26,5 +27,7 @@ export const useGetMessagesByConversation = (id: string, userId?: string) => {
             }
         },
         enabled: Boolean(id && userId),
+        staleTime: 1 * 60 * 1000, // Consider data fresh for 1 minute (messages change frequently)
+        gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
     })
 }

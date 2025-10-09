@@ -159,8 +159,15 @@ export const ConversationChat = ({
       // Listen for new messages
       newSocket.on('newMessage', (message: ConversationMessage) => {
         console.log('📨 Received new message:', message);
-        // Refetch messages to update the UI
-        refetch();
+        // Update React Query cache directly instead of refetching
+        queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
+          if (!oldData) return oldData;
+          // Add the new message to the existing messages
+          return {
+            ...oldData,
+            messages: [...(oldData.messages || []), message]
+          };
+        });
       });
 
       setSocket(newSocket);
@@ -192,35 +199,26 @@ export const ConversationChat = ({
     setIsSubmitting(true);
     console.log('📤 Sending message:', newMessage);
 
-    const message: ConversationMessage = {
-      id: Date.now().toString(),
-      senderId: currentUserId!,
-      senderName: 'You',
-      content: newMessage.trim(),
-      timestamp: new Date(),
-      type: 'text'
-    };
-
+    // Send via WebSocket for real-time delivery
     socket?.emit('wsMessage', {
       content: newMessage.trim(),
       receiverId: participantId,
     });
 
-    setNewMessage('');
-
+    // Also send via HTTP for persistence (but don't refetch on success)
     try {
-      mutation.mutate({
+      await mutation.mutateAsync({
         receiverId: participantId,
         content: newMessage.trim(),
         userId: currentUserId!
       });
-
       console.log('✅ Message sent successfully');
     } catch (error) {
       console.error('❌ Failed to send message:', error);
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setNewMessage('');
+    setIsSubmitting(false);
   };
 
 
@@ -357,12 +355,18 @@ export const ConversationChat = ({
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Prevent any default form submission
+                handleSendMessage();
+              }
+            }}
             placeholder="Type your message"
             className="flex-1 px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:border-[#4a342a]/50 focus:bg-white/20 transition-all"
             disabled={isSubmitting}
           />
           <button
+            type="button"
             onClick={handleSendMessage}
             disabled={!newMessage.trim() || isSubmitting}
             className="px-4 py-3 bg-[#4a342a]/80 hover:bg-[#553c30]/90 text-white rounded-lg border border-[#553c30]/50 hover:border-[#4a342a]/70 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"

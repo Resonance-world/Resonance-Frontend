@@ -12,10 +12,9 @@ export const useWriteMessage = (refetch?: () => void) => {
         },
         onSuccess: (response) => {
             console.log('✅ Message sent successfully:', response.data);
-            if (refetch) {
-                console.log('🔄 Triggering refetch after message send...');
-                refetch();
-            }
+            // Don't refetch here - WebSocket will handle real-time updates
+            // This prevents page reloads when sending messages
+            // The sent message will appear via WebSocket newMessage event
         },
         onError: (error: AxiosError) => {
             console.error('❌ Message send failed:', error);
