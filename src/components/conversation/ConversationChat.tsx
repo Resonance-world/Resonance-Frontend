@@ -159,12 +159,8 @@ export const ConversationChat = ({
       // Listen for new messages
       newSocket.on('newMessage', (message: ConversationMessage) => {
         console.log('📨 Received new message:', message);
-        // Update React Query cache directly
-        queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
-          if (!oldData) return oldData;
-          // Add the new message to the existing messages array
-          return [...(oldData || []), message];
-        });
+        // Refetch messages to update the UI
+        refetch();
       });
 
       setSocket(newSocket);
@@ -199,22 +195,6 @@ export const ConversationChat = ({
     const messageContent = newMessage.trim();
     setNewMessage(''); // Clear input immediately
 
-    // Create optimistic message for immediate UI update
-    const optimisticMessage: ConversationMessage = {
-      id: Date.now().toString(),
-      senderId: currentUserId!,
-      senderName: 'You',
-      content: messageContent,
-      timestamp: new Date(),
-      type: 'text'
-    };
-
-    // Add optimistic message to cache immediately
-    queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
-      if (!oldData) return [optimisticMessage];
-      return [...oldData, optimisticMessage];
-    });
-
     // Send via WebSocket for real-time delivery
     socket?.emit('wsMessage', {
       content: messageContent,
@@ -231,11 +211,6 @@ export const ConversationChat = ({
       console.log('✅ Message sent successfully');
     } catch (error) {
       console.error('❌ Failed to send message:', error);
-      // Remove optimistic message on error
-      queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
-        if (!oldData) return oldData;
-        return oldData.filter((msg: ConversationMessage) => msg.id !== optimisticMessage.id);
-      });
     }
 
     setIsSubmitting(false);
