@@ -1,17 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useSession } from 'next-auth/react';
 import { ErrorBoundary, SimpleErrorFallback } from '@/components/ui/ErrorBoundary';
-import { LoadingWrapper } from '@/components/ui/LoadingWrapper';
 
-// Dynamic import for better bundle splitting - onboarding is heavy with chatbot logic
+// Simple dynamic import without loading state - let the component handle its own loading
 const ChatbotOnboarding = dynamic(
-  () => import('@/components/onboarding/ChatbotOnboarding').then(mod => ({ default: mod.ChatbotOnboarding })),
-  {
-    loading: () => <PageLoadingSpinner text="Loading onboarding..." />
-  }
+  () => import('@/components/onboarding/ChatbotOnboarding').then(mod => ({ default: mod.ChatbotOnboarding }))
 );
 
 /**
@@ -26,9 +21,7 @@ export default function OnboardingPage() {
   // This enables development/testing without requiring World App authentication
   return (
     <ErrorBoundary fallback={SimpleErrorFallback}>
-      <LoadingWrapper loadingText="Loading onboarding..." minLoadingTime={2000}>
-        <ChatbotOnboarding session={session} />
-      </LoadingWrapper>
+      <ChatbotOnboarding session={session} />
     </ErrorBoundary>
   );
 } 

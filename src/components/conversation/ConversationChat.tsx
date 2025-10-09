@@ -223,9 +223,15 @@ export const ConversationChat = ({
           }}
         />
         
-        {/* Loading Text */}
-        <div className="relative z-10 text-white text-2xl font-medium">
-          Loading
+        {/* Dark Overlay */}
+        <div className="fixed inset-0 bg-black/40" />
+        
+        {/* Loading Content */}
+        <div className="relative z-10 flex items-center justify-center">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading conversation...</div>
+          </div>
         </div>
       </div>
     );

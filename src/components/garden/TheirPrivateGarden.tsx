@@ -99,13 +99,13 @@ export const TheirPrivateGarden = () => {
           isPublic: false,
           worldId: `@${userData.username}`,
           socialLinks: {
-            telegram: userData.telegramHandle,
-            instagram: userData.instagramHandle,
-            baseFarcaster: userData.baseFarcasterHandle,
-            zora: userData.zoraHandle,
-            linkedin: userData.linkedinHandle,
-            x: userData.xHandle,
-            website: userData.websiteUrl
+            telegram: userData.telegramHandle ?? undefined,
+            instagram: userData.instagramHandle ?? undefined,
+            baseFarcaster: userData.baseFarcasterHandle ?? undefined,
+            zora: userData.zoraHandle ?? undefined,
+            linkedin: userData.linkedinHandle ?? undefined,
+            x: userData.xHandle ?? undefined,
+            website: userData.websiteUrl ?? undefined
           }
         };
 
@@ -149,8 +149,26 @@ export const TheirPrivateGarden = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Loading private garden...</div>
+      <div className="min-h-screen relative">
+        {/* Background Image */}
+        <div 
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/circles_background.png)',
+            filter: 'brightness(0.3) contrast(1.2)'
+          }}
+        />
+        
+        {/* Dark Overlay */}
+        <div className="fixed inset-0 bg-black/40" />
+        
+        {/* Loading Content */}
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading private garden...</div>
+          </div>
+        </div>
       </div>
     );
   }
