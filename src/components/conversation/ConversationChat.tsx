@@ -14,15 +14,17 @@ import { relationshipsService } from '@/services/relationshipsService';
 interface ConversationChatProps {
   participantId: string;
   conversationPrompt: string;
+  conversationTheme?: string;
 }
 
 /**
  * ConversationChat - Main chat interface with conversation rating
  * Implements the conversation screen from Figma wireframes
  */
-export const ConversationChat = ({
-  participantId,
+export const ConversationChat = ({ 
+  participantId, 
   conversationPrompt,
+  conversationTheme = "Philosophy & Meaning",
 
 }: ConversationChatProps) => {
   const { data: chatUser, isFetching, error } = useGetUserById(participantId);
@@ -339,7 +341,7 @@ export const ConversationChat = ({
         {/* Conversation Prompt */}
         <div className="px-4 py-3 bg-white/10 backdrop-blur-sm border-b border-white/20">
           <div className="text-center">
-            <div className="text-gray-300 text-xs mb-1">Philosophy & Meaning</div>
+            <div className="text-gray-300 text-xs mb-1">{conversationTheme}</div>
             <div className="text-white text-sm font-medium">&ldquo;{conversationPrompt}&rdquo;</div>
           </div>
         </div>
