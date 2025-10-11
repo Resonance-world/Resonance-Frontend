@@ -75,6 +75,11 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
   const isInitialLoad = loadingDeployedPrompt || matchesLoading;
 
   console.log('🏠 Living Room initialized for user:', session?.user?.name || session?.user?.username || 'Guest');
+  console.log('🔍 Debug - deployedPrompts:', deployedPrompts);
+  console.log('🔍 Debug - activeDeployedPrompt:', activeDeployedPrompt);
+  console.log('🔍 Debug - isInitialLoad:', isInitialLoad);
+  console.log('🔍 Debug - loadingDeployedPrompt:', loadingDeployedPrompt);
+  console.log('🔍 Debug - matchesLoading:', matchesLoading);
 
   // Auto-refresh matches when prompt is deployed
   useEffect(() => {
