@@ -211,7 +211,12 @@ export const ConversationChat = ({
     };
 
     // Add to local state for INSTANT display
-    setOptimisticMessages(prev => [...prev, optimisticMessage]);
+    setOptimisticMessages(prev => {
+      const newMessages = [...prev, optimisticMessage];
+      console.log('🚀 Adding optimistic message:', optimisticMessage);
+      console.log('🚀 Total optimistic messages:', newMessages.length);
+      return newMessages;
+    });
 
     // Send via WebSocket for real-time delivery
     socket?.emit('wsMessage', {
@@ -399,7 +404,15 @@ export const ConversationChat = ({
           bottom: '100px' // End above fixed footer
         }}
       >
-        {[...(conversationMessages || []), ...optimisticMessages].toReversed().map((message: ConversationMessage) => (
+        {(() => {
+          const allMessages = [...(conversationMessages || []), ...optimisticMessages];
+          console.log('📱 Displaying messages:', {
+            conversationMessages: conversationMessages?.length || 0,
+            optimisticMessages: optimisticMessages.length,
+            totalMessages: allMessages.length
+          });
+          return allMessages.toReversed();
+        })().map((message: ConversationMessage) => (
             <div
                 key={message.id}
                 className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
