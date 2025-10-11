@@ -33,7 +33,6 @@ export const ConversationChat = ({
   const [socket, setSocket] = useState<Socket | null>(null);
   const [canAccessPrivateGarden, setCanAccessPrivateGarden] = useState<boolean | null>(null);
   const [isCheckingGardenAccess, setIsCheckingGardenAccess] = useState(false);
-  const [localMessages, setLocalMessages] = useState<ConversationMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user: userData, loading: userLoading, updateUser } = useUser();
@@ -160,16 +159,8 @@ export const ConversationChat = ({
       // Listen for new messages
       newSocket.on('newMessage', (message: ConversationMessage) => {
         console.log('📨 Received new message:', message);
-        // Add to local state (like Discord/Slack)
-        setLocalMessages(prev => {
-          // Check if message already exists (avoid duplicates)
-          const exists = prev.some(msg => msg.id === message.id || 
-            (msg.content === message.content && msg.senderId === message.senderId && 
-             Math.abs(new Date(msg.timestamp).getTime() - new Date(message.timestamp).getTime()) < 5000));
-          
-          if (exists) return prev;
-          return [...prev, message];
-        });
+        // Refetch messages to update the UI
+        refetch();
       });
 
       setSocket(newSocket);
@@ -193,7 +184,7 @@ export const ConversationChat = ({
   };
   useEffect(() => {
     scrollToBottom();
-  }, [conversationMessages, localMessages]);
+  }, [conversationMessages]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || isSubmitting) return;
@@ -204,22 +195,7 @@ export const ConversationChat = ({
     const messageContent = newMessage.trim();
     setNewMessage(''); // Clear input immediately
 
-    // Add message to UI immediately (optimistic update)
-    const optimisticMessage: ConversationMessage = {
-      id: `optimistic-${Date.now()}-${Math.random()}`,
-      senderId: currentUserId!,
-      senderName: 'You',
-      content: messageContent,
-      timestamp: new Date(),
-      type: 'text'
-    };
 
-    // Add to local state for INSTANT display (like Discord/Slack)
-    setLocalMessages(prev => {
-      const newMessages = [...prev, optimisticMessage];
-      console.log('🚀 Adding message to local state:', optimisticMessage);
-      return newMessages;
-    });
 
     // Send via WebSocket for real-time delivery
     socket?.emit('wsMessage', {
@@ -407,16 +383,7 @@ export const ConversationChat = ({
           bottom: '100px' // End above fixed footer
         }}
       >
-        {(() => {
-          // Combine server messages with local messages (like Discord/Slack)
-          const allMessages = [...(conversationMessages || []), ...localMessages];
-          console.log('📱 Displaying messages:', {
-            conversationMessages: conversationMessages?.length || 0,
-            localMessages: localMessages.length,
-            totalMessages: allMessages.length
-          });
-          return allMessages.toReversed();
-        })().map((message: ConversationMessage) => (
+        {conversationMessages?.toReversed().map((message: ConversationMessage) => (
             <div
                 key={message.id}
                 className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}

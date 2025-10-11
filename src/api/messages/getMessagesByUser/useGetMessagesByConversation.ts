@@ -27,7 +27,7 @@ export const useGetMessagesByConversation = (id: string, userId?: string) => {
             }
         },
         enabled: Boolean(id && userId),
-        staleTime: 1 * 60 * 1000, // Consider data fresh for 1 minute (messages change frequently)
+        staleTime: 0, // Always consider data stale for instant refetches
         gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
     })
 }
