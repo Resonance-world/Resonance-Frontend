@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Prompt } from '@/types/home';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface MyPromptProps {
   currentPrompt: Prompt | null;
@@ -16,12 +17,14 @@ interface MyPromptProps {
  */
 export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
   const [isSelecting, setIsSelecting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [customPrompt, setCustomPrompt] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
 
   console.log('📝 MyPrompt component - Current prompt:', currentPrompt);
 
@@ -117,6 +120,48 @@ export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
     }
   };
 
+  const handleCancelPrompt = async () => {
+    if (!session?.user?.id || !currentPrompt?.id) return;
+    
+    const confirmed = window.confirm('Are you sure you want to cancel this prompt? This will expire all related matches.');
+    if (!confirmed) return;
+    
+    setIsCancelling(true);
+    
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+      const response = await fetch(`${backendUrl}/api/deployed-prompts/${currentPrompt.id}/cancel`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body: JSON.stringify({
+          userId: session.user.id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to cancel prompt');
+      }
+
+      // Clear the current prompt
+      onPromptUpdate(null);
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['deployedPrompts', session.user.id] });
+      queryClient.invalidateQueries({ queryKey: ['matches', session.user.id] });
+      queryClient.invalidateQueries({ queryKey: ['expiredMatches', session.user.id] });
+      
+      console.log('✅ Prompt cancelled successfully');
+    } catch (error) {
+      console.error('❌ Failed to cancel prompt:', error);
+      alert('Failed to cancel prompt. Please try again.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   const isDeployed = currentPrompt?.deployedAt;
   const currentTheme = currentPrompt?.theme;
   const currentQuestion = currentPrompt?.question;
@@ -179,8 +224,22 @@ export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
         {/* Deployed state */}
         {isDeployed && (
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
-            <div className="text-sm font-medium text-green-400">Prompt deployed!</div>
-            <div className="text-xs text-green-300/70">Add new prompt in 3 days</div>
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <div className="text-sm font-medium text-green-400">Prompt deployed!</div>
+                <div className="text-xs text-green-300/70">Add new prompt in 3 days</div>
+              </div>
+              <button
+                onClick={handleCancelPrompt}
+                disabled={isCancelling}
+                className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCancelling ? 'Cancelling...' : 'Cancel'}
+              </button>
+            </div>
+            <div className="text-xs text-green-300/70">
+              Theme: {currentTheme} | Question: {currentQuestion}
+            </div>
           </div>
         )}
       </div>
