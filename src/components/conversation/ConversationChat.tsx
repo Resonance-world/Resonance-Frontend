@@ -33,7 +33,7 @@ export const ConversationChat = ({
   const [socket, setSocket] = useState<Socket | null>(null);
   const [canAccessPrivateGarden, setCanAccessPrivateGarden] = useState<boolean | null>(null);
   const [isCheckingGardenAccess, setIsCheckingGardenAccess] = useState(false);
-  const [optimisticMessages, setOptimisticMessages] = useState<ConversationMessage[]>([]);
+  const [localMessages, setLocalMessages] = useState<ConversationMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user: userData, loading: userLoading, updateUser } = useUser();
@@ -160,12 +160,16 @@ export const ConversationChat = ({
       // Listen for new messages
       newSocket.on('newMessage', (message: ConversationMessage) => {
         console.log('📨 Received new message:', message);
-        // Remove optimistic message when real message arrives
-        if (message.senderId === currentUserId) {
-          setOptimisticMessages(prev => prev.filter(msg => msg.id !== message.id));
-        }
-        // Refetch to get the real message
-        refetch();
+        // Add to local state (like Discord/Slack)
+        setLocalMessages(prev => {
+          // Check if message already exists (avoid duplicates)
+          const exists = prev.some(msg => msg.id === message.id || 
+            (msg.content === message.content && msg.senderId === message.senderId && 
+             Math.abs(new Date(msg.timestamp).getTime() - new Date(message.timestamp).getTime()) < 5000));
+          
+          if (exists) return prev;
+          return [...prev, message];
+        });
       });
 
       setSocket(newSocket);
@@ -189,7 +193,7 @@ export const ConversationChat = ({
   };
   useEffect(() => {
     scrollToBottom();
-  }, [conversationMessages, optimisticMessages]);
+  }, [conversationMessages, localMessages]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || isSubmitting) return;
@@ -210,11 +214,10 @@ export const ConversationChat = ({
       type: 'text'
     };
 
-    // Add to local state for INSTANT display
-    setOptimisticMessages(prev => {
+    // Add to local state for INSTANT display (like Discord/Slack)
+    setLocalMessages(prev => {
       const newMessages = [...prev, optimisticMessage];
-      console.log('🚀 Adding optimistic message:', optimisticMessage);
-      console.log('🚀 Total optimistic messages:', newMessages.length);
+      console.log('🚀 Adding message to local state:', optimisticMessage);
       return newMessages;
     });
 
@@ -405,10 +408,11 @@ export const ConversationChat = ({
         }}
       >
         {(() => {
-          const allMessages = [...(conversationMessages || []), ...optimisticMessages];
+          // Combine server messages with local messages (like Discord/Slack)
+          const allMessages = [...(conversationMessages || []), ...localMessages];
           console.log('📱 Displaying messages:', {
             conversationMessages: conversationMessages?.length || 0,
-            optimisticMessages: optimisticMessages.length,
+            localMessages: localMessages.length,
             totalMessages: allMessages.length
           });
           return allMessages.toReversed();
