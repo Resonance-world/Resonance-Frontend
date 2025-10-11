@@ -33,6 +33,7 @@ export const ConversationChat = ({
   const [socket, setSocket] = useState<Socket | null>(null);
   const [canAccessPrivateGarden, setCanAccessPrivateGarden] = useState<boolean | null>(null);
   const [isCheckingGardenAccess, setIsCheckingGardenAccess] = useState(false);
+  const [optimisticMessages, setOptimisticMessages] = useState<ConversationMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user: userData, loading: userLoading, updateUser } = useUser();
@@ -159,20 +160,12 @@ export const ConversationChat = ({
       // Listen for new messages
       newSocket.on('newMessage', (message: ConversationMessage) => {
         console.log('📨 Received new message:', message);
-        // Update cache directly to replace optimistic message with real one
-        queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
-          if (!oldData) return [message];
-          // Replace optimistic message with real message if it's from current user
-          if (message.senderId === currentUserId) {
-            return oldData.map((msg: ConversationMessage) => 
-              msg.id.startsWith('optimistic-') && msg.senderId === currentUserId 
-                ? message 
-                : msg
-            );
-          }
-          // Add new message from other user
-          return [...oldData, message];
-        });
+        // Remove optimistic message when real message arrives
+        if (message.senderId === currentUserId) {
+          setOptimisticMessages(prev => prev.filter(msg => msg.id !== message.id));
+        }
+        // Refetch to get the real message
+        refetch();
       });
 
       setSocket(newSocket);
@@ -196,7 +189,7 @@ export const ConversationChat = ({
   };
   useEffect(() => {
     scrollToBottom();
-  }, [conversationMessages]);
+  }, [conversationMessages, optimisticMessages]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || isSubmitting) return;
@@ -217,11 +210,8 @@ export const ConversationChat = ({
       type: 'text'
     };
 
-    // Add to cache immediately for instant display
-    queryClient.setQueryData(['get-messages', participantId, currentUserId], (oldData: any) => {
-      if (!oldData) return [optimisticMessage];
-      return [...oldData, optimisticMessage];
-    });
+    // Add to local state for INSTANT display
+    setOptimisticMessages(prev => [...prev, optimisticMessage]);
 
     // Send via WebSocket for real-time delivery
     socket?.emit('wsMessage', {
@@ -409,7 +399,7 @@ export const ConversationChat = ({
           bottom: '100px' // End above fixed footer
         }}
       >
-        {conversationMessages?.toReversed().map((message: ConversationMessage) => (
+        {[...(conversationMessages || []), ...optimisticMessages].toReversed().map((message: ConversationMessage) => (
             <div
                 key={message.id}
                 className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
