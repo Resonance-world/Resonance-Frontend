@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Match, Prompt } from '@/types/home';
 import { UserMatch } from '@/services/matchService';
 import { useAcceptMatch, useDeclineMatch } from '@/api/matches/useMatches';
+import { useExpiredMatches } from '@/api/matches/useExpiredMatches';
 import { MatchStatusIndicator } from '@/components/matches/MatchStatusIndicator';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -22,8 +24,12 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
   const router = useRouter();
   const { mutate: acceptMatch, isPending: isAccepting } = useAcceptMatch();
   const { mutate: declineMatch, isPending: isDeclining } = useDeclineMatch();
+  const [activeTab, setActiveTab] = useState<'current' | 'expired'>('current');
+  
+  // Fetch expired matches
+  const { data: expiredMatches = [], isLoading: loadingExpired } = useExpiredMatches(session?.user?.id);
 
-  console.log('🎯 YourMatches component - Matches:', matches.length, 'Has matched today:', hasMatchedToday);
+  console.log('🎯 YourMatches component - Matches:', matches.length, 'Expired:', expiredMatches.length, 'Has matched today:', hasMatchedToday);
 
   const handleAcceptMatch = (matchId: string) => {
     if (!session?.user?.id) return;
@@ -42,6 +48,47 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
   const handleGoToCircles = (relationshipId: string) => {
     console.log('🔗 Going to circles with relationship:', relationshipId);
     router.push(`/circles?relationshipId=${relationshipId}`);
+  };
+
+  const renderExpiredMatchCard = (match: any) => {
+    const isConfirmed = match.status === 'CONFIRMED';
+    const isExpired = match.status === 'EXPIRED';
+    
+    return (
+      <div key={match.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-gray-400/30">
+        <div className="flex items-center space-x-4">
+          <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center">
+            {match.userProfile.profilePictureUrl ? (
+              <img 
+                src={match.userProfile.profilePictureUrl} 
+                alt={match.user} 
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-gray-300 text-lg font-medium">
+                {match.user.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+          
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h3 className="text-white font-medium">{match.user}</h3>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-400 bg-gray-600/50 px-2 py-1 rounded-full">
+                  EXPIRED
+                </span>
+              </div>
+            </div>
+            <p className="text-gray-300 text-sm mt-1">{match.question}</p>
+            <p className="text-gray-400 text-xs mt-1">{match.category}</p>
+            <p className="text-gray-500 text-xs mt-1">
+              Expired: {new Date(match.expiredAt).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderEmptyState = () => {
@@ -158,19 +205,56 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
   };
 
   const renderMatches = () => {
-    const visibleMatches = matches.filter(match => 
-      match.status === 'PENDING' || match.status === 'CONFIRMED'
-    );
+    if (activeTab === 'current') {
+      const visibleMatches = matches.filter(match => 
+        match.status === 'PENDING' || match.status === 'CONFIRMED'
+      );
 
-    if (visibleMatches.length === 0) {
-      return renderEmptyState();
+      if (visibleMatches.length === 0) {
+        return renderEmptyState();
+      }
+
+      return (
+        <div className="space-y-3">
+          {visibleMatches.map(renderMatchCard)}
+        </div>
+      );
+    } else {
+      // Expired matches tab
+      if (loadingExpired) {
+        return (
+          <div className="space-y-3">
+            {[...Array(2)].map((_, index) => (
+              <div key={index} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 animate-pulse">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 rounded-full bg-white/20"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-white/20 rounded w-3/4"></div>
+                    <div className="h-4 bg-white/20 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      if (expiredMatches.length === 0) {
+        return (
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-gray-400/30 text-center">
+            <div className="text-gray-300 text-sm">
+              No expired matches yet. Matches expire when prompts are cancelled or after 7 days.
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="space-y-3">
+          {expiredMatches.map(renderExpiredMatchCard)}
+        </div>
+      );
     }
-
-    return (
-      <div className="space-y-3">
-        {visibleMatches.map(renderMatchCard)}
-      </div>
-    );
   };
 
   return (
@@ -180,7 +264,29 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
         5 matches a day. Show up with curiosity and feel the magic unfold.
       </div>
 
-      {matches.length > 0 ? renderMatches() : renderEmptyState()}
+      {/* Tab Navigation */}
+      <div className="flex justify-center space-x-4 mb-4">
+        <button
+          className={`px-4 py-2 rounded-full text-sm font-medium ${
+            activeTab === 'current' ? 'bg-white text-black' : 'bg-white/20 text-white'
+          }`}
+          onClick={() => setActiveTab('current')}
+        >
+          Current ({matches.filter(m => m.status === 'PENDING' || m.status === 'CONFIRMED').length})
+        </button>
+        <button
+          className={`px-4 py-2 rounded-full text-sm font-medium ${
+            activeTab === 'expired' ? 'bg-white text-black' : 'bg-white/20 text-white'
+          }`}
+          onClick={() => setActiveTab('expired')}
+        >
+          Expired ({expiredMatches.length})
+        </button>
+      </div>
+
+      {activeTab === 'current' && matches.length > 0 ? renderMatches() : 
+       activeTab === 'expired' ? renderMatches() : 
+       activeTab === 'current' ? renderEmptyState() : null}
       
       {/* Add profile information prompt */}
       <div className="mt-4 pt-4 border-t border-white/20">

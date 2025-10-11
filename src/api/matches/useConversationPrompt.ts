@@ -17,7 +17,7 @@ export const useConversationPrompt = (currentUserId?: string, otherUserId?: stri
     queryKey: ['conversation-prompt', currentUserId, otherUserId],
     queryFn: () => {
       console.log('🔍 Fetching conversation prompt for:', currentUserId, 'and', otherUserId);
-      return AxiosInstance.get(`/api/matches/conversation-prompt/${currentUserId}/${otherUserId}`).then((res) => {
+      return AxiosInstance.get(`/api/matches/conversation-test`).then((res) => {
         console.log('🔍 Conversation prompt response:', res.data);
         return res.data;
       });
