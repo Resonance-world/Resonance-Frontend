@@ -173,12 +173,7 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
             <div className="h-4 bg-white/20 rounded mb-2"></div>
             <div className="h-4 bg-white/20 rounded w-3/4"></div>
           </div>
-        ) : !activeDeployedPrompt ? (
-          <MyPrompt 
-            currentPrompt={currentPrompt}
-            onPromptUpdate={handlePromptUpdate}
-          />
-        ) : (
+        ) : activeDeployedPrompt ? (
           <DeployedPromptSuccess
             themeName={activeDeployedPrompt.themeName}
             question={activeDeployedPrompt.question}
@@ -186,9 +181,15 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
             expiresAt={new Date(activeDeployedPrompt.expiresAt)}
             deployedPromptId={activeDeployedPrompt.id}
             onPromptCancelled={() => {
+              console.log('🔴 onPromptCancelled callback triggered!');
               setCurrentPrompt(null);
               queryClient.invalidateQueries({ queryKey: ['deployedPrompts', session?.user?.id] });
             }}
+          />
+        ) : (
+          <MyPrompt 
+            currentPrompt={currentPrompt}
+            onPromptUpdate={handlePromptUpdate}
           />
         )}
 

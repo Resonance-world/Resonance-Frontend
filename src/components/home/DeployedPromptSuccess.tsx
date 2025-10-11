@@ -38,17 +38,14 @@ export const DeployedPromptSuccess = ({
     sessionUserId: session?.user?.id
   });
 
-  const handleCancelPrompt = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleCancelPrompt = async () => {
     console.log('🔴 Cancel button clicked!');
     console.log('🔴 Session user ID:', session?.user?.id);
     console.log('🔴 Deployed prompt ID:', deployedPromptId);
     
     if (!session?.user?.id || !deployedPromptId) {
       console.error('❌ Missing session or deployedPromptId');
-      alert('Error: Missing user session or prompt ID');
+      alert('Error: Missing user session or prompt ID. Session: ' + session?.user?.id + ', Prompt: ' + deployedPromptId);
       return;
     }
     
@@ -151,12 +148,14 @@ export const DeployedPromptSuccess = ({
           </div>
         </div>
         <button
-          onClick={(e) => {
-            console.log('🔴 Button clicked directly!');
-            handleCancelPrompt(e);
+          type="button"
+          onClick={() => {
+            console.log('🔴 Button clicked directly in JSX!');
+            handleCancelPrompt();
           }}
           disabled={isCancelling}
-          className="bg-gray-600/30 text-gray-300 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-600/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-gray-500/30 hover:border-gray-400/50"
+          className="bg-gray-600/30 text-gray-300 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-600/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-gray-500/30 hover:border-gray-400/50 cursor-pointer"
+          style={{ pointerEvents: 'auto', zIndex: 999 }}
         >
           {isCancelling ? 'Cancelling...' : 'Cancel'}
         </button>
