@@ -38,10 +38,16 @@ export const DeployedPromptSuccess = ({
     sessionUserId: session?.user?.id
   });
 
-  const handleCancelPrompt = async () => {
+  const handleCancelPrompt = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     console.log('🔴 Cancel button clicked!');
     console.log('🔴 Session user ID:', session?.user?.id);
     console.log('🔴 Deployed prompt ID:', deployedPromptId);
+    
+    // Test if button is working
+    alert('Cancel button clicked! This is a test.');
     
     if (!session?.user?.id || !deployedPromptId) {
       console.error('❌ Missing session or deployedPromptId');
@@ -149,10 +155,14 @@ export const DeployedPromptSuccess = ({
         <button
           onClick={handleCancelPrompt}
           disabled={isCancelling}
-          className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95 transform"
-          style={{ pointerEvents: 'auto' }}
+          className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-95 transform border border-red-400"
+          style={{ 
+            pointerEvents: 'auto',
+            zIndex: 10,
+            position: 'relative'
+          }}
         >
-          {isCancelling ? 'Cancelling...' : 'Cancel'}
+          {isCancelling ? 'Cancelling...' : 'Cancel Prompt'}
         </button>
       </div>
       
