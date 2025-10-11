@@ -29,16 +29,38 @@ export const DeployedPromptSuccess = ({
   const queryClient = useQueryClient();
   const [isCancelling, setIsCancelling] = useState(false);
 
+  // Debug logging
+  console.log('🔍 DeployedPromptSuccess rendered with props:', {
+    themeName,
+    question,
+    deployedPromptId,
+    hasOnPromptCancelled: !!onPromptCancelled,
+    sessionUserId: session?.user?.id
+  });
+
   const handleCancelPrompt = async () => {
-    if (!session?.user?.id || !deployedPromptId) return;
+    console.log('🔴 Cancel button clicked!');
+    console.log('🔴 Session user ID:', session?.user?.id);
+    console.log('🔴 Deployed prompt ID:', deployedPromptId);
+    
+    if (!session?.user?.id || !deployedPromptId) {
+      console.error('❌ Missing session or deployedPromptId');
+      return;
+    }
     
     const confirmed = window.confirm('Are you sure you want to cancel this prompt? This will expire all related matches.');
-    if (!confirmed) return;
+    if (!confirmed) {
+      console.log('❌ User cancelled the confirmation');
+      return;
+    }
     
+    console.log('✅ User confirmed cancellation, starting...');
     setIsCancelling(true);
     
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+      console.log('🔴 Making API call to:', `${backendUrl}/api/deployed-prompts/${deployedPromptId}/cancel`);
+      
       const response = await fetch(`${backendUrl}/api/deployed-prompts/${deployedPromptId}/cancel`, {
         method: 'PATCH',
         headers: {
@@ -50,14 +72,24 @@ export const DeployedPromptSuccess = ({
         })
       });
 
+      console.log('🔴 API response status:', response.status);
+      console.log('🔴 API response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Failed to cancel prompt');
+        const errorText = await response.text();
+        console.error('❌ API error response:', errorText);
+        throw new Error(`Failed to cancel prompt: ${response.status} ${errorText}`);
       }
 
+      const responseData = await response.json();
+      console.log('✅ API response data:', responseData);
+
       // Call the parent callback to handle prompt cancellation
+      console.log('🔴 Calling onPromptCancelled callback');
       onPromptCancelled();
       
       // Invalidate queries to refresh data
+      console.log('🔴 Invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['deployedPrompts', session.user.id] });
       queryClient.invalidateQueries({ queryKey: ['matches', session.user.id] });
       queryClient.invalidateQueries({ queryKey: ['expiredMatches', session.user.id] });
@@ -65,7 +97,7 @@ export const DeployedPromptSuccess = ({
       console.log('✅ Prompt cancelled successfully');
     } catch (error) {
       console.error('❌ Failed to cancel prompt:', error);
-      alert('Failed to cancel prompt. Please try again.');
+      alert(`Failed to cancel prompt: ${error.message}`);
     } finally {
       setIsCancelling(false);
     }
@@ -117,7 +149,8 @@ export const DeployedPromptSuccess = ({
         <button
           onClick={handleCancelPrompt}
           disabled={isCancelling}
-          className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95 transform"
+          style={{ pointerEvents: 'auto' }}
         >
           {isCancelling ? 'Cancelling...' : 'Cancel'}
         </button>
