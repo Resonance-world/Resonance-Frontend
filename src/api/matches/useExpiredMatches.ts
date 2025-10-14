@@ -21,10 +21,6 @@ interface ExpiredMatch {
   expiredAt: string;
 }
 
-interface ExpiredMatchesResponse {
-  matches: ExpiredMatch[];
-}
-
 export const useExpiredMatches = (userId: string | undefined) => {
   return useQuery({
     queryKey: ['expiredMatches', userId],

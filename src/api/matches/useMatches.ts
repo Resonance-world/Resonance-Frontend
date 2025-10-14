@@ -46,6 +46,8 @@ export const useDeclineMatch = () => {
     onSuccess: (data, variables) => {
       // Invalidate matches query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['matches', variables.userId] });
+      // Also invalidate expired matches since declined matches are now moved to expired
+      queryClient.invalidateQueries({ queryKey: ['expiredMatches', variables.userId] });
       
       console.log('✅ Match declined:', data.message);
     },
