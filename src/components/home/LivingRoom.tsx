@@ -183,6 +183,8 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
             onPromptCancelled={() => {
               setCurrentPrompt(null);
               queryClient.invalidateQueries({ queryKey: ['deployedPrompts', session?.user?.id] });
+              queryClient.invalidateQueries({ queryKey: ['matches', session?.user?.id] });
+              queryClient.invalidateQueries({ queryKey: ['expiredMatches', session?.user?.id] });
             }}
           />
         )}

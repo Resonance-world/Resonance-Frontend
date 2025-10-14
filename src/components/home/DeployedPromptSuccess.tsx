@@ -1,5 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+
 interface DeployedPromptSuccessProps {
   themeName: string;
   question: string;
@@ -21,6 +24,48 @@ export const DeployedPromptSuccess = ({
   deployedPromptId,
   onPromptCancelled
 }: DeployedPromptSuccessProps) => {
+  const { data: session } = useSession();
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const handleCancelPrompt = async () => {
+    if (!session?.user?.id || !deployedPromptId) {
+      alert('Error: Missing user session or prompt ID');
+      return;
+    }
+    
+    setIsCancelling(true);
+    
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+      const response = await fetch(`${backendUrl}/api/deployed-prompts/${deployedPromptId}/cancel`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body: JSON.stringify({
+          userId: session.user.id
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to cancel prompt: ${response.status} ${errorText}`);
+      }
+
+      // Call the parent callback to handle prompt cancellation
+      onPromptCancelled();
+      
+    } catch (error) {
+      console.error('Failed to cancel prompt:', error);
+      alert(`Failed to cancel prompt: ${error.message}`);
+    } finally {
+      setIsCancelling(false);
+      setShowConfirmModal(false);
+    }
+  };
+
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
@@ -66,10 +111,11 @@ export const DeployedPromptSuccess = ({
           </div>
         </div>
         <button
-          onClick={onPromptCancelled}
-          className="bg-gray-600 hover:bg-gray-700 text-white text-sm py-2 px-3 rounded-md transition-colors font-medium"
+          onClick={() => setShowConfirmModal(true)}
+          disabled={isCancelling}
+          className="bg-gray-600 hover:bg-gray-700 text-white text-sm py-2 px-3 rounded-md transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Cancel
+          {isCancelling ? 'Cancelling...' : 'Cancel'}
         </button>
       </div>
       
@@ -95,6 +141,33 @@ export const DeployedPromptSuccess = ({
           🔍 We're finding people who resonate with you ...
         </p>
       </div> */}
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white/10 border border-white/20 rounded-lg p-6 max-w-sm mx-4 backdrop-blur-sm">
+            <h3 className="text-white text-lg font-medium mb-4">Cancel Prompt?</h3>
+            <p className="text-white/80 text-sm mb-6">
+              Are you sure you want to cancel this prompt? This will expire all related matches and you'll need to deploy a new prompt to find matches.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white hover:bg-white/20 transition-colors"
+              >
+                Keep Prompt
+              </button>
+              <button
+                onClick={handleCancelPrompt}
+                disabled={isCancelling}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCancelling ? 'Cancelling...' : 'Cancel Prompt'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
