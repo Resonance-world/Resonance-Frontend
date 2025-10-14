@@ -179,6 +179,11 @@ export const LivingRoom = ({ session }: LivingRoomProps) => {
             question={activeDeployedPrompt.question}
             deployedAt={new Date(activeDeployedPrompt.deployedAt)}
             expiresAt={new Date(activeDeployedPrompt.expiresAt)}
+            deployedPromptId={activeDeployedPrompt.id}
+            onPromptCancelled={() => {
+              setCurrentPrompt(null);
+              queryClient.invalidateQueries({ queryKey: ['deployedPrompts', session?.user?.id] });
+            }}
           />
         )}
 
