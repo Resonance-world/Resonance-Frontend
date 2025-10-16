@@ -17,18 +17,10 @@ const LivingRoom = dynamic(
 export default async function HomePage() {
   const session = await auth();
 
-  // For guest mode (development), create a mock session
-  const guestSession = {
-    user: {
-      id: 'guest-user-id',
-      name: 'Guest User',
-      username: 'guest',
-      profilePictureUrl: null
-    }
-  };
+  // Redirect to login if no session
+  if (!session) {
+    return <div>Please log in to access this page.</div>;
+  }
 
-  // Use real session if available, otherwise use guest session for development
-  const activeSession = session || guestSession;
-
-  return <LivingRoom session={activeSession} />;
+  return <LivingRoom session={session} />;
 }
