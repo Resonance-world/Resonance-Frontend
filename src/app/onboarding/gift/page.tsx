@@ -1,9 +1,9 @@
-import { WelcomeGift } from '@/components/onboarding/WelcomeGift';
+import { TokenEarning } from '@/components/onboarding/TokenEarning';
 
 /**
  * Gift page - Third screen in the onboarding flow
- * Shows the NFT gift and welcome message
+ * Shows email verification and RES token earning opportunity
  */
 export default function GiftPage() {
-  return <WelcomeGift />;
+  return <TokenEarning />;
 } 
