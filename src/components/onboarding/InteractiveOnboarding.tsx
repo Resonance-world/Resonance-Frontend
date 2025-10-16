@@ -476,22 +476,19 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
 
   const generatePersonalitySummary = async (data: OnboardingData): Promise<string> => {
     try {
-      const response = await fetch('/api/gemini-chat', {
+      const response = await fetch('/api/generate-personality-summary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [
-            { role: 'user', content: `Create a personality summary based on this onboarding data: ${JSON.stringify(data)}` }
-          ],
-          context: `Based on the user's onboarding responses, create a concise "why" summary that captures their essence and core personality. This will be used for matching with other users. Focus on their motivations, communication style, and what drives them. Keep it under 100 words.`
+          onboardingData: data
         }),
       });
 
       if (response.ok) {
         const result = await response.json();
-        return result.message;
+        return result.summary;
       } else {
         console.error('❌ Failed to generate personality summary');
         return 'A thoughtful individual seeking meaningful connections.';
