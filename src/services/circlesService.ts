@@ -24,6 +24,7 @@ export interface UserProfile {
   isVerified: boolean;
   lastActiveAt: string;
   name: string | null;
+  age: number | null;
   zodiacSign: string | null;
   essenceKeywords: string | null;
   communicationTone: string | null;
