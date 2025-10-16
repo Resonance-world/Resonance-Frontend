@@ -598,7 +598,12 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
                       }
                     }}
                     className="w-full px-4 py-3 rounded-full border border-gray-600 bg-gray-800/80 text-white focus:outline-none focus:ring-2 focus:ring-[#4a342a]/50 focus:border-[#4a342a]/50 backdrop-blur-sm"
-                    max={new Date().toISOString().split('T')[0]}
+                    max={(() => {
+                      // Set max date to 18 years ago from today
+                      const today = new Date();
+                      const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+                      return maxDate.toISOString().split('T')[0];
+                    })()}
                     min="1900-01-01"
                   />
                 </div>
