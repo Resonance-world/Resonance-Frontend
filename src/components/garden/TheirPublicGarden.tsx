@@ -39,33 +39,6 @@ export const TheirPublicGarden = () => {
       try {
         setLoading(true);
         
-        // Handle Tessa mockup separately
-        if (userId === 'tessa') {
-          const tessaProfile: GardenProfile = {
-            id: 'profile-tessa',
-            name: 'Tessa',
-            profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
-            nftImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop&crop=center',
-            essence: ['Curiosity', 'Grounded'],
-            bio: "I'm always exploring new ideas and places, and I try to stay connected to what matters — my practice, nature, and people I care about.",
-            isPublic: true,
-            worldId: '@tessachup',
-            socialLinks: {
-              telegram: 'tessla',
-              instagram: 'tessaractt_',
-              baseFarcaster: 'tessla.farcaster.eth',
-              zora: 'tessaract',
-              linkedin: 'tessla',
-              x: 'tesslaoxo',
-              website: 'www.tessla.me'
-            }
-          };
-          setProfile(tessaProfile);
-          setIsMutualFriend(true);
-          setLoading(false);
-          return;
-        }
-
         // Fetch real user from backend
         console.log('🔄 Fetching user profile from backend:', userId);
         const userData = await fetchUserProfile(userId);

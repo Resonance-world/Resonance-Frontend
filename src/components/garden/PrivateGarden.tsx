@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { GardenProfile, MOCK_USER_PROFILE } from '@/types/garden';
+import { GardenProfile } from '@/types/garden';
 import { ProfilePictureUpload } from './ProfilePictureUpload';
 import { useUser } from '@/hooks/useUser';
 
@@ -12,7 +12,7 @@ import { useUser } from '@/hooks/useUser';
  * Implements the private garden from Figma wireframes
  */
 export const PrivateGarden = () => {
-  const [profile, setProfile] = useState<GardenProfile>(MOCK_USER_PROFILE);
+  const [profile, setProfile] = useState<GardenProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingInfo, setIsEditingInfo] = useState(false);
   const [infoData, setInfoData] = useState({
@@ -27,7 +27,7 @@ export const PrivateGarden = () => {
   const { data: session } = useSession();
   const { user: userData, loading: userLoading, updateUser, refreshUser } = useUser();
 
-  console.log('🌱 Private Garden initialized for:', profile.name);
+  console.log('🌱 Private Garden initialized');
   console.log('👤 Session data:', session?.user);
 
   // Update profile with real user data when available
@@ -40,13 +40,15 @@ export const PrivateGarden = () => {
       const profileImageUrl = userData.privateProfilePictureUrl || userData.profilePictureUrl || '/profilePictureDefault-2.png';
       console.log('🖼️ Final profile image URL:', profileImageUrl);
       
-      setProfile(prev => ({
-        ...prev,
-        name: userData.name || userData.username || prev.name,
-        worldId: userData.username ? `@${userData.username}` : prev.worldId,
+      setProfile({
+        id: userData.id,
+        name: userData.name || userData.username || 'User',
+        worldId: userData.username ? `@${userData.username}` : '',
         profileImage: profileImageUrl,
-        bio: userData.personalitySummary || prev.bio,
-        essence: userData.essenceKeywords ? [userData.essenceKeywords] : prev.essence,
+        nftImage: '',
+        bio: userData.personalitySummary || '',
+        essence: userData.essenceKeywords ? [userData.essenceKeywords] : [],
+        isPublic: true,
         socialLinks: {
           telegram: userData.telegramHandle || undefined,
           instagram: userData.instagramHandle || undefined,
@@ -56,7 +58,7 @@ export const PrivateGarden = () => {
           x: userData.xHandle || undefined,
           website: userData.websiteUrl || undefined
         }
-      }));
+      });
       
       // Update info data
       setInfoData({
@@ -69,12 +71,17 @@ export const PrivateGarden = () => {
       });
     } else if (session?.user) {
       console.log('🔄 Updating profile with World ID data:', session.user);
-      setProfile(prev => ({
-        ...prev,
-        name: session.user.name || session.user.username || prev.name,
-        worldId: session.user.username ? `@${session.user.username}` : prev.worldId,
-        profileImage: session.user.profilePictureUrl || prev.profileImage
-      }));
+      setProfile({
+        id: session.user.id || '',
+        name: session.user.name || session.user.username || 'User',
+        worldId: session.user.username ? `@${session.user.username}` : '',
+        profileImage: session.user.profilePictureUrl || '/profilePictureDefault-2.png',
+        nftImage: '',
+        bio: '',
+        essence: [],
+        isPublic: true,
+        socialLinks: {}
+      });
     }
   }, [userData, session]);
 
@@ -86,6 +93,8 @@ export const PrivateGarden = () => {
   const handleSaveProfile = async () => {
     console.log('💾 Saving profile changes to database');
     setIsEditing(false);
+    
+    if (!profile) return;
     
     try {
       await updateUser({
@@ -106,10 +115,12 @@ export const PrivateGarden = () => {
     console.log('🖼️ New image URL type:', newImageUrl.startsWith('data:') ? 'base64' : newImageUrl.startsWith('blob:') ? 'blob' : 'url');
     console.log('🖼️ New image URL length:', newImageUrl.length);
     
-    setProfile(prev => ({
-      ...prev,
+    if (!profile) return;
+    
+    setProfile({
+      ...profile,
       profileImage: newImageUrl
-    }));
+    });
 
     try {
       console.log('🖼️ Sending to backend:', { privateProfilePictureUrl: newImageUrl.substring(0, 100) + '...' });
@@ -159,7 +170,9 @@ export const PrivateGarden = () => {
       // Refresh user data to get the latest information including calculated age
       await refreshUser();
       
-      setProfile(prev => ({ ...prev, name: infoData.name }));
+      if (profile) {
+        setProfile({ ...profile, name: infoData.name });
+      }
       setIsEditingInfo(false);
       console.log('✅ Info section updated successfully');
     } catch (error) {
@@ -179,7 +192,7 @@ export const PrivateGarden = () => {
     setIsEditingInfo(false);
   };
 
-  if (userLoading) {
+  if (userLoading || !profile) {
     return (
       <div className="min-h-screen relative">
         {/* Background Image */}
