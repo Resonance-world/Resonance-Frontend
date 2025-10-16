@@ -289,6 +289,8 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
     const currentQuestion = onboardingQuestions[currentQuestionIndex];
     if (!currentQuestion || currentQuestion.questionType !== 'date' || !date.trim()) return;
 
+    console.log('🔍 Date selected:', date);
+
     // Double-check age validation (must be at least 18)
     const birthDate = new Date(date);
     const today = new Date();
@@ -547,6 +549,15 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
     return maxDateString;
   };
 
+  // Calculate default date (18 years ago from today) for the date picker
+  const getDefaultDateForAgeValidation = () => {
+    const today = new Date();
+    const defaultDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const defaultDateString = defaultDate.toISOString().split('T')[0];
+    console.log('🔍 Default date for age validation:', defaultDateString);
+    return defaultDateString;
+  };
+
   // Show loading screen while checking onboarding status
   if (isCheckingStatus) {
     return (
@@ -625,6 +636,7 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
                 <div className="mt-2">
                   <input
                     type="date"
+                    defaultValue={getDefaultDateForAgeValidation()}
                     onChange={(e) => setInputValue(e.target.value)}
                     onBlur={(e) => {
                       // Trigger when user finishes with date picker (clicks Done or taps outside)
