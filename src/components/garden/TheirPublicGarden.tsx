@@ -39,33 +39,6 @@ export const TheirPublicGarden = () => {
       try {
         setLoading(true);
         
-        // Handle Tessa mockup separately
-        if (userId === 'tessa') {
-          const tessaProfile: GardenProfile = {
-            id: 'profile-tessa',
-            name: 'Tessa',
-            profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
-            nftImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop&crop=center',
-            essence: ['Curiosity', 'Grounded'],
-            bio: "I'm always exploring new ideas and places, and I try to stay connected to what matters — my practice, nature, and people I care about.",
-            isPublic: true,
-            worldId: '@tessachup',
-            socialLinks: {
-              telegram: 'tessla',
-              instagram: 'tessaractt_',
-              baseFarcaster: 'tessla.farcaster.eth',
-              zora: 'tessaract',
-              linkedin: 'tessla',
-              x: 'tesslaoxo',
-              website: 'www.tessla.me'
-            }
-          };
-          setProfile(tessaProfile);
-          setIsMutualFriend(true);
-          setLoading(false);
-          return;
-        }
-
         // Fetch real user from backend
         console.log('🔄 Fetching user profile from backend:', userId);
         const userData = await fetchUserProfile(userId);
@@ -82,21 +55,24 @@ export const TheirPublicGarden = () => {
           isPublic: true,
           worldId: `@${userData.username}`,
           socialLinks: {
-            telegram: userData.telegramHandle,
-            instagram: userData.instagramHandle,
-            baseFarcaster: userData.baseFarcasterHandle,
-            zora: userData.zoraHandle,
-            linkedin: userData.linkedinHandle,
-            x: userData.xHandle,
-            website: userData.websiteUrl
+            telegram: userData.telegramHandle ?? undefined,
+            instagram: userData.instagramHandle ?? undefined,
+            baseFarcaster: userData.baseFarcasterHandle ?? undefined,
+            zora: userData.zoraHandle ?? undefined,
+            linkedin: userData.linkedinHandle ?? undefined,
+            x: userData.xHandle ?? undefined,
+            website: userData.websiteUrl ?? undefined
           }
         };
 
         setProfile(userProfile);
+        setLoading(false); // Set loading to false immediately after profile is set
         
-        // Fetch match data if we have a current user session
+        // Fetch match data in background (non-blocking)
         if (session?.user?.id) {
-          await fetchMatchData(session.user.id, userData.id);
+          fetchMatchData(session.user.id, userData.id).catch(error => {
+            console.error('❌ Error fetching match data:', error);
+          });
         }
         
         // Check if user is mutual friend (mock logic for now)
@@ -193,8 +169,26 @@ export const TheirPublicGarden = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Loading profile...</div>
+      <div className="min-h-screen relative">
+        {/* Background Image */}
+        <div 
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/circles_background.png)',
+            filter: 'brightness(0.3) contrast(1.2)'
+          }}
+        />
+        
+        {/* Dark Overlay */}
+        <div className="fixed inset-0 bg-black/40" />
+        
+        {/* Loading Content */}
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading public garden...</div>
+          </div>
+        </div>
       </div>
     );
   }

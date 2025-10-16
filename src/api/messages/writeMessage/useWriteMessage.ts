@@ -12,6 +12,7 @@ export const useWriteMessage = (refetch?: () => void) => {
         },
         onSuccess: (response) => {
             console.log('✅ Message sent successfully:', response.data);
+            // Refetch to ensure message appears (WebSocket might not always work)
             if (refetch) {
                 console.log('🔄 Triggering refetch after message send...');
                 refetch();

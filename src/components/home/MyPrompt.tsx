@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Prompt } from '@/types/home';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface MyPromptProps {
   currentPrompt: Prompt | null;
@@ -22,6 +23,7 @@ export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
 
   console.log('📝 MyPrompt component - Current prompt:', currentPrompt);
 
@@ -117,6 +119,7 @@ export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
     }
   };
 
+
   const isDeployed = currentPrompt?.deployedAt;
   const currentTheme = currentPrompt?.theme;
   const currentQuestion = currentPrompt?.question;
@@ -179,8 +182,13 @@ export const MyPrompt = ({ currentPrompt, onPromptUpdate }: MyPromptProps) => {
         {/* Deployed state */}
         {isDeployed && (
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
-            <div className="text-sm font-medium text-green-400">Prompt deployed!</div>
-            <div className="text-xs text-green-300/70">Add new prompt in 3 days</div>
+            <div className="mb-2">
+              <div className="text-sm font-medium text-green-400">Prompt deployed!</div>
+              <div className="text-xs text-green-300/70">Add new prompt in 3 days</div>
+            </div>
+            <div className="text-xs text-green-300/70">
+              Theme: {currentTheme} | Question: {currentQuestion}
+            </div>
           </div>
         )}
       </div>

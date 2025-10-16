@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ProfileCard } from './ProfileCard';
-// import { useGetAllUsers } from '@/api/users/useGetAllUsers/useGetAllUsers';
 import { useMatchedUsers } from '@/api/matches/useMatchedUsers';
 import { useGetUnreadMessages } from '@/api/messages/useGetUnreadMessages';
 import { relationshipsService } from '@/services/relationshipsService';
@@ -18,14 +17,13 @@ export const CirclesPage = () => {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [privateUsers, setPrivateUsers] = useState<string[]>([]); // Array of user IDs in private circle
-  // const {data: circles, isFetching, error} = useGetAllUsers(session?.user?.id);
   const {data: matchedUsersData, isFetching, error} = useMatchedUsers(session?.user?.id);
   
   // Handle relationshipId parameter from confirmed matches
   const relationshipId = searchParams.get('relationshipId');
   
   // Get user IDs from matched users (excluding current user)
-  const userIds = matchedUsersData?.users?.filter(user => user.id !== session?.user?.id).map(user => user.id) || [];
+  const userIds = matchedUsersData?.users?.filter((user: any) => user.id !== session?.user?.id).map((user: any) => user.id) || [];
   const {data: unreadData} = useGetUnreadMessages(session?.user?.id, userIds);
   
   // Load private relationships on component mount
@@ -128,7 +126,29 @@ export const CirclesPage = () => {
   console.log('🔍 Unread messages map:', Array.from(unreadMessagesMap.entries()));
 
   if (isFetching) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen relative">
+        {/* Background Image */}
+        <div 
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/circles_background.png)',
+            filter: 'brightness(0.3) contrast(1.2)'
+          }}
+        />
+        
+        {/* Dark Overlay */}
+        <div className="fixed inset-0 bg-black/40" />
+        
+        {/* Loading Content */}
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading your circles...</div>
+          </div>
+        </div>
+      </div>
+    );
   }
   return (
     <div className="resonance-dark min-h-screen flex flex-col relative">
@@ -176,7 +196,7 @@ export const CirclesPage = () => {
                 // Private section with empty state
                 <div className="max-w-sm mx-auto">
                     {/* Empty state - only show when private circle is empty */}
-                    {matchedUsersData?.users?.filter(user => user.id !== session?.user?.id).length === 0 ? (
+                    {matchedUsersData?.users?.filter((user: any) => user.id !== session?.user?.id).length === 0 ? (
                         <div className="bg-white/10 border border-white/20 rounded-lg p-6 text-center">
                             <p className="text-white text-lg font-medium mb-2">
                                 Add more people to your private circle

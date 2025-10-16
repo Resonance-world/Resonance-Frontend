@@ -24,6 +24,7 @@ export interface UserProfile {
   isVerified: boolean;
   lastActiveAt: string;
   name: string | null;
+  age: number | null;
   zodiacSign: string | null;
   essenceKeywords: string | null;
   communicationTone: string | null;
@@ -99,12 +100,25 @@ export const fetchAllUsers = async (): Promise<BackendUser[]> => {
   }
 };
 
-// Fetch user profile by ID
+// Simple cache for user profiles to avoid repeated API calls
+const userProfileCache = new Map<string, { data: UserProfile; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Fetch user profile by ID with caching
 export const fetchUserProfile = async (userId: string): Promise<UserProfile> => {
   try {
+    // Check cache first
+    const cached = userProfileCache.get(userId);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      console.log('📦 Using cached user profile for:', userId);
+      return cached.data;
+    }
+
+    console.log('🔄 Fetching user profile from API:', userId);
     const response = await fetch(`${BACKEND_URL}/api/users/${userId}`, {
       headers: {
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Cache-Control': 'max-age=300' // 5 minutes cache
       }
     });
     
@@ -117,6 +131,9 @@ export const fetchUserProfile = async (userId: string): Promise<UserProfile> => 
     if (!data.success) {
       throw new Error(data.error || 'Failed to fetch user profile');
     }
+    
+    // Cache the result
+    userProfileCache.set(userId, { data: data.user, timestamp: Date.now() });
     
     return data.user;
   } catch (error) {

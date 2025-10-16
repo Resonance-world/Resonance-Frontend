@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { GardenProfile, MOCK_USER_PROFILE } from '@/types/garden';
+import { GardenProfile } from '@/types/garden';
 import { useUser } from '@/hooks/useUser';
 
 /**
@@ -11,7 +11,7 @@ import { useUser } from '@/hooks/useUser';
  * Based on the Amara public profile design
  */
 export const MyPublicGarden = () => {
-  const [profile, setProfile] = useState<GardenProfile>(MOCK_USER_PROFILE);
+  const [profile, setProfile] = useState<GardenProfile | null>(null);
   const [isEditingWhy, setIsEditingWhy] = useState(false);
   const [whyText, setWhyText] = useState('');
   const router = useRouter();
@@ -22,23 +22,31 @@ export const MyPublicGarden = () => {
   useEffect(() => {
     if (userData) {
       console.log('🔄 Updating public profile with real user data:', userData);
-      setProfile(prev => ({
-        ...prev,
-        name: userData.name || userData.username || prev.name,
-        worldId: userData.username ? `@${userData.username}` : prev.worldId,
-        profileImage: userData.profilePictureUrl || prev.profileImage,
-        bio: userData.userWhy || userData.personalitySummary || prev.bio,
-        essence: userData.essenceKeywords ? [userData.essenceKeywords] : prev.essence
-      }));
+      setProfile({
+        id: userData.id,
+        name: userData.name || userData.username || 'User',
+        worldId: userData.username ? `@${userData.username}` : '',
+        profileImage: userData.profilePictureUrl || '',
+        nftImage: '',
+        bio: userData.userWhy || userData.personalitySummary || '',
+        essence: userData.essenceKeywords ? [userData.essenceKeywords] : [],
+        isPublic: true,
+        socialLinks: {}
+      });
       setWhyText(userData.userWhy || userData.personalitySummary || '');
     } else if (session?.user) {
       console.log('🔄 Updating public profile with World ID data:', session.user);
-      setProfile(prev => ({
-        ...prev,
-        name: session.user.name || session.user.username || prev.name,
-        worldId: session.user.username ? `@${session.user.username}` : prev.worldId,
-        profileImage: session.user.profilePictureUrl || prev.profileImage
-      }));
+      setProfile({
+        id: session.user.id || '',
+        name: session.user.name || session.user.username || 'User',
+        worldId: session.user.username ? `@${session.user.username}` : '',
+        profileImage: session.user.profilePictureUrl || '',
+        nftImage: '',
+        bio: '',
+        essence: [],
+        isPublic: true,
+        socialLinks: {}
+      });
     }
   }, [userData, session]);
 
@@ -57,7 +65,7 @@ export const MyPublicGarden = () => {
   };
 
   const handleSaveWhy = async () => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id || !profile) return;
     
     try {
       await updateUser({ userWhy: whyText });
@@ -65,7 +73,7 @@ export const MyPublicGarden = () => {
       // Refresh user data to get the latest information
       await refreshUser();
       
-      setProfile(prev => ({ ...prev, bio: whyText }));
+      setProfile({ ...profile, bio: whyText });
       setIsEditingWhy(false);
       console.log('✅ Why section updated successfully');
     } catch (error) {
@@ -78,10 +86,28 @@ export const MyPublicGarden = () => {
     setIsEditingWhy(false);
   };
 
-  if (userLoading) {
+  if (userLoading || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Loading your public garden...</div>
+      <div className="min-h-screen relative">
+        {/* Background Image */}
+        <div 
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/garden_background.png)',
+            filter: 'brightness(0.3) contrast(1.2)'
+          }}
+        />
+        
+        {/* Dark Overlay */}
+        <div className="fixed inset-0 bg-black/40" />
+        
+        {/* Loading Content */}
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading your public garden...</div>
+          </div>
+        </div>
       </div>
     );
   }

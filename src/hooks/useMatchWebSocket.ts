@@ -85,6 +85,9 @@ export const useMatchWebSocket = (userId: string) => {
         relationshipId: data.relationshipId
       });
       
+      // Invalidate matched-users query to refresh circles page
+      queryClient.invalidateQueries({ queryKey: ['matched-users', data.userId] });
+      
       // Show success notification (you could integrate with a toast library here)
       console.log('✅ Match confirmed! You can now start chatting.');
     });

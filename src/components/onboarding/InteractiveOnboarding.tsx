@@ -289,6 +289,37 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
     const currentQuestion = onboardingQuestions[currentQuestionIndex];
     if (!currentQuestion || currentQuestion.questionType !== 'date' || !date.trim()) return;
 
+    console.log('🔍 Date selected:', date);
+
+    // Double-check age validation (must be at least 18)
+    const birthDate = new Date(date);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Check if birthday hasn't occurred this year
+    const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) 
+      ? age - 1 
+      : age;
+
+    if (actualAge < 18) {
+      console.log('❌ Age validation failed:', actualAge, 'years old');
+      // Show error message for underage users
+      const errorMsg: ChatMessage = {
+        id: `msg-${Date.now()}-error`,
+        content: "I'm sorry, but you must be at least 18 years old to use this platform. Please select a different birth date.",
+        isFromBot: true,
+        timestamp: new Date(),
+        questionType: 'date',
+        showInteractiveElements: true
+      };
+      
+      setMessages(prev => [...prev, errorMsg]);
+      return;
+    }
+
+    console.log('✅ Age validation passed:', actualAge, 'years old');
+
     // Clear the input value
     setInputValue('');
 
@@ -476,22 +507,19 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
 
   const generatePersonalitySummary = async (data: OnboardingData): Promise<string> => {
     try {
-      const response = await fetch('/api/gemini-chat', {
+      const response = await fetch('/api/generate-personality-summary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [
-            { role: 'user', content: `Create a personality summary based on this onboarding data: ${JSON.stringify(data)}` }
-          ],
-          context: `Based on the user's onboarding responses, create a concise "why" summary that captures their essence and core personality. This will be used for matching with other users. Focus on their motivations, communication style, and what drives them. Keep it under 100 words.`
+          onboardingData: data
         }),
       });
 
       if (response.ok) {
         const result = await response.json();
-        return result.message;
+        return result.summary;
       } else {
         console.error('❌ Failed to generate personality summary');
         return 'A thoughtful individual seeking meaningful connections.';
@@ -511,6 +539,24 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
 
   const currentQuestion = onboardingQuestions[currentQuestionIndex];
   const showTextInput = currentQuestion?.questionType === 'text' && currentQuestion.id !== 'completion';
+  
+  // Calculate max date for age validation (18 years ago from today)
+  const getMaxDateForAgeValidation = () => {
+    const today = new Date();
+    const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const maxDateString = maxDate.toISOString().split('T')[0];
+    console.log('🔍 Max date for age validation:', maxDateString);
+    return maxDateString;
+  };
+
+  // Calculate default date (18 years ago from today) for the date picker
+  const getDefaultDateForAgeValidation = () => {
+    const today = new Date();
+    const defaultDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const defaultDateString = defaultDate.toISOString().split('T')[0];
+    console.log('🔍 Default date for age validation:', defaultDateString);
+    return defaultDateString;
+  };
 
   // Show loading screen while checking onboarding status
   if (isCheckingStatus) {
@@ -590,6 +636,7 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
                 <div className="mt-2">
                   <input
                     type="date"
+                    defaultValue={getDefaultDateForAgeValidation()}
                     onChange={(e) => setInputValue(e.target.value)}
                     onBlur={(e) => {
                       // Trigger when user finishes with date picker (clicks Done or taps outside)
@@ -598,7 +645,7 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
                       }
                     }}
                     className="w-full px-4 py-3 rounded-full border border-gray-600 bg-gray-800/80 text-white focus:outline-none focus:ring-2 focus:ring-[#4a342a]/50 focus:border-[#4a342a]/50 backdrop-blur-sm"
-                    max={new Date().toISOString().split('T')[0]}
+                    max={getMaxDateForAgeValidation()}
                     min="1900-01-01"
                   />
                 </div>

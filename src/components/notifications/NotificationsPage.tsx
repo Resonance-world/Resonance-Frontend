@@ -23,46 +23,8 @@ interface Notification {
 export const NotificationsPage = () => {
   const [activeTab, setActiveTab] = useState<NotificationTab>('All');
 
-  // Mock notifications data based on screenshots
-  const notifications: Notification[] = [
-    {
-      id: '1',
-      type: 'match',
-      icon: '💖',
-      title: '"Computer mind or human mind"',
-      description: 'Your prompt has found resonance. Would you like to meet them?',
-      actionText: 'Yes',
-      secondaryActionText: 'Not yet',
-      status: 'pending'
-    },
-    {
-      id: '2',
-      type: 'circle',
-      icon: '🎁',
-      title: 'You are now part of [user]\'s circle',
-      description: 'Explore their inner garden',
-      actionText: 'Go to inner garden',
-      status: 'active'
-    },
-    {
-      id: '3',
-      type: 'prompt',
-      icon: 'O',
-      title: 'Your prompt "Computer mind or human mind" has completed its cycle.',
-      description: 'Ready to release it and plant a new one?',
-      actionText: 'Craft new prompt',
-      status: 'completed'
-    },
-    {
-      id: '4',
-      type: 'reflection',
-      icon: '👁',
-      title: 'Today\'s reflection is here',
-      description: '"What made you feel alive today?"',
-      actionText: 'Reflect',
-      status: 'active'
-    }
-  ];
+  // TODO: Fetch real notifications from API
+  const notifications: Notification[] = [];
 
   const tabs: NotificationTab[] = ['All', 'Match', 'Circle', 'Prompt', 'Pending'];
 

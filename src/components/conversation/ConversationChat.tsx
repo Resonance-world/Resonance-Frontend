@@ -14,15 +14,17 @@ import { relationshipsService } from '@/services/relationshipsService';
 interface ConversationChatProps {
   participantId: string;
   conversationPrompt: string;
+  conversationTheme?: string;
 }
 
 /**
  * ConversationChat - Main chat interface with conversation rating
  * Implements the conversation screen from Figma wireframes
  */
-export const ConversationChat = ({
-  participantId,
+export const ConversationChat = ({ 
+  participantId, 
   conversationPrompt,
+  conversationTheme = "Philosophy & Meaning",
 
 }: ConversationChatProps) => {
   const { data: chatUser, isFetching, error } = useGetUserById(participantId);
@@ -42,7 +44,7 @@ export const ConversationChat = ({
   const { data: conversationMessages, isFetching: isFetchingConvMessages, error: convMessagesError, refetch } = useGetMessagesByConversation(participantId, currentUserId);
   const mutation = useWriteMessage(refetch);
 
-  // Check garden access when participant changes
+  // Check garden access when participant changes (non-blocking)
   useEffect(() => {
     const checkGardenAccess = async () => {
       if (participantId && currentUserId) {
@@ -60,6 +62,7 @@ export const ConversationChat = ({
       }
     };
 
+    // Run garden access check in background (non-blocking)
     checkGardenAccess();
   }, [participantId, currentUserId]);
 
@@ -110,55 +113,71 @@ export const ConversationChat = ({
     }
   }, [currentUserId, participantId]);
 
+  // WebSocket connection setup (non-blocking)
   useEffect(() => {
     if (!currentUserId) {
       console.log('🔌 No currentUserId, skipping WebSocket connection');
       return;
     }
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
-    const newSocket = io(backendUrl, {
-      query: {
-        userId: currentUserId
-      },
-      transports: ['websocket', 'polling'],
-      timeout: 20000,
-      forceNew: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000
-    });
+    let currentSocket: Socket | null = null;
 
-    newSocket.on('connect', () => {
-      console.log('🔌 Connected to WebSocket server');
-      setIsConnected(true);
-    });
+    // Set up WebSocket connection in background
+    const setupWebSocket = async () => {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
+      const newSocket = io(backendUrl, {
+        query: {
+          userId: currentUserId
+        },
+        transports: ['websocket', 'polling'],
+        timeout: 10000, // Reduced timeout for faster fallback
+        forceNew: true,
+        reconnection: true,
+        reconnectionAttempts: 3, // Reduced attempts
+        reconnectionDelay: 500 // Faster reconnection
+      });
 
-    newSocket.on('connect_error', (error) => {
-      console.error('🔌 WebSocket connection error:', error);
-    });
+      currentSocket = newSocket; // Store reference for cleanup
 
-    newSocket.on('disconnect', (reason) => {
-      console.log('🔌 Disconnected from WebSocket server, reason:', reason);
-      setIsConnected(false);
-    });
+      newSocket.on('connect', () => {
+        console.log('🔌 Connected to WebSocket server');
+        setIsConnected(true);
+      });
 
-    newSocket.on('reply', (data) => {
-      console.log('📨 Received reply:', data);
-    });
+      newSocket.on('connect_error', (error) => {
+        console.error('🔌 WebSocket connection error:', error);
+        setIsConnected(false);
+      });
 
-    // Listen for new messages
-    newSocket.on('newMessage', (message: ConversationMessage) => {
-      console.log('📨 Received new message:', message);
-      // Refetch messages to update the UI
-      refetch();
-    });
+      newSocket.on('disconnect', (reason) => {
+        console.log('🔌 Disconnected from WebSocket server, reason:', reason);
+        setIsConnected(false);
+      });
 
-    setSocket(newSocket);
+      newSocket.on('reply', (data) => {
+        console.log('📨 Received reply:', data);
+      });
+
+      // Listen for new messages
+      newSocket.on('newMessage', (message: ConversationMessage) => {
+        console.log('📨 Received new message:', message);
+        // Refetch messages to update the UI
+        refetch();
+      });
+
+      setSocket(newSocket);
+    };
+
+    // Run WebSocket setup in background
+    setupWebSocket().catch(error => {
+      console.error('❌ Error setting up WebSocket:', error);
+    });
 
     return () => {
-      console.log('🔌 Cleaning up WebSocket connection');
-      newSocket.disconnect();
+      if (currentSocket) {
+        console.log('🔌 Cleaning up WebSocket connection');
+        currentSocket.disconnect();
+      }
     };
   }, [currentUserId, refetch]);
 
@@ -175,35 +194,30 @@ export const ConversationChat = ({
     setIsSubmitting(true);
     console.log('📤 Sending message:', newMessage);
 
-    const message: ConversationMessage = {
-      id: Date.now().toString(),
-      senderId: currentUserId!,
-      senderName: 'You',
-      content: newMessage.trim(),
-      timestamp: new Date(),
-      type: 'text'
-    };
+    const messageContent = newMessage.trim();
+    setNewMessage(''); // Clear input immediately
 
+
+
+    // Send via WebSocket for real-time delivery
     socket?.emit('wsMessage', {
-      content: newMessage.trim(),
+      content: messageContent,
       receiverId: participantId,
     });
 
-    setNewMessage('');
-
+    // Also send via HTTP for persistence
     try {
-      mutation.mutate({
+      await mutation.mutateAsync({
         receiverId: participantId,
-        content: newMessage.trim(),
+        content: messageContent,
         userId: currentUserId!
       });
-
       console.log('✅ Message sent successfully');
     } catch (error) {
       console.error('❌ Failed to send message:', error);
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setIsSubmitting(false);
   };
 
 
@@ -211,7 +225,8 @@ export const ConversationChat = ({
     router.back();
   };
 
-  if (isFetching || isFetchingConvMessages || userLoading || !currentUserId){
+  // Only show loading if essential data is missing
+  if (userLoading || !currentUserId){
     return (
       <div className="fixed inset-0 w-full h-full flex items-center justify-center">
         {/* Garden Background */}
@@ -223,15 +238,48 @@ export const ConversationChat = ({
           }}
         />
         
-        {/* Loading Text */}
-        <div className="relative z-10 text-white text-2xl font-medium">
-          Loading
+        {/* Dark Overlay */}
+        <div className="fixed inset-0 bg-black/40" />
+        
+        {/* Loading Content */}
+        <div className="relative z-10 flex items-center justify-center">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading conversation...</div>
+          </div>
         </div>
       </div>
     );
   }
   console.log(conversationMessages, "messages");
   console.log('chat User data logs:', chatUser);
+
+  // Show loading state for chat user if still fetching
+  if (isFetching && !chatUser) {
+    return (
+      <div className="fixed inset-0 w-full h-full flex items-center justify-center">
+        {/* Garden Background */}
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/garden_background.png)',
+            filter: 'brightness(0.3) contrast(1.2)',
+          }}
+        />
+        
+        {/* Dark Overlay */}
+        <div className="fixed inset-0 bg-black/40" />
+        
+        {/* Loading Content */}
+        <div className="relative z-10 flex items-center justify-center">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-white text-lg">Loading conversation...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
 
 
@@ -293,7 +341,7 @@ export const ConversationChat = ({
         {/* Conversation Prompt */}
         <div className="px-4 py-3 bg-white/10 backdrop-blur-sm border-b border-white/20">
           <div className="text-center">
-            <div className="text-gray-300 text-xs mb-1">Philosophy & Meaning</div>
+            <div className="text-gray-300 text-xs mb-1">{conversationTheme}</div>
             <div className="text-white text-sm font-medium">&ldquo;{conversationPrompt}&rdquo;</div>
           </div>
         </div>
@@ -306,12 +354,18 @@ export const ConversationChat = ({
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Prevent any default form submission
+                handleSendMessage();
+              }
+            }}
             placeholder="Type your message"
             className="flex-1 px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:border-[#4a342a]/50 focus:bg-white/20 transition-all"
             disabled={isSubmitting}
           />
           <button
+            type="button"
             onClick={handleSendMessage}
             disabled={!newMessage.trim() || isSubmitting}
             className="px-4 py-3 bg-[#4a342a]/80 hover:bg-[#553c30]/90 text-white rounded-lg border border-[#553c30]/50 hover:border-[#4a342a]/70 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"

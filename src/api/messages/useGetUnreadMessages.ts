@@ -22,6 +22,7 @@ export const useGetUnreadMessages = (currentUserId: string | undefined, userIds:
       const response = await fetch(`${backendUrl}/api/messages/unread/${currentUserId}?${userIdsParam}`, {
         headers: {
           'ngrok-skip-browser-warning': 'true',
+          'Cache-Control': 'max-age=30' // 30 seconds cache for unread messages
         },
       });
 
@@ -32,6 +33,8 @@ export const useGetUnreadMessages = (currentUserId: string | undefined, userIds:
       return response.json();
     },
     enabled: !!currentUserId && userIds.length > 0,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    gcTime: 2 * 60 * 1000, // Keep in cache for 2 minutes
     refetchInterval: 5000, // Refetch every 5 seconds to keep unread counts updated
   });
 };

@@ -26,11 +26,7 @@ export default function SettingsPage() {
           <div className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 p-4 space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-white/70 text-sm">World ID</span>
-              <span className="text-white text-sm">{user?.username || session?.user?.username || 'Not set'}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-white/70 text-sm">Wallet</span>
-              <span className="text-white text-sm">@{user?.walletAddress || session?.user?.walletAddress || 'Not set'}</span>
+              <span className="text-white text-sm">@{user?.username || session?.user?.username || 'Not set'}</span>
             </div>
           </div>
         </div>
