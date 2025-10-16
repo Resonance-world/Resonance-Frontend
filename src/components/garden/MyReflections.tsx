@@ -73,11 +73,19 @@ export const MyReflections = () => {
   };
 
   const handleDateClick = (date: Date) => {
+    // Don't allow selection of future dates
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+    
+    if (date > today) {
+      return; // Don't select future dates
+    }
+    
     setSelectedDate(date);
   };
 
-  const handleGoToChat = () => {
-    console.log('💬 Going to chat for reflection');
+  const handleStartJournaling = () => {
+    console.log('📝 Starting journaling for reflection');
     setShowComingSoonModal(true);
   };
 
@@ -155,29 +163,37 @@ export const MyReflections = () => {
 
           {/* Calendar days */}
           <div className="grid grid-cols-7 gap-1">
-            {days.map((day, index) => (
-              <button
-                key={index}
-                onClick={() => handleDateClick(day.date)}
-                className={`
-                  aspect-square flex items-center justify-center text-sm rounded-lg transition-colors
-                  ${day.isCurrentMonth 
-                    ? 'text-white hover:bg-gray-700' 
-                    : 'text-gray-500'
-                  }
-                  ${isToday(day.date) 
-                    ? 'bg-gray-600 font-semibold' 
-                    : ''
-                  }
-                  ${selectedDate && day.date.toDateString() === selectedDate.toDateString()
-                    ? 'bg-green-600 text-white'
-                    : ''
-                  }
-                `}
-              >
-                {day.day}
-              </button>
-            ))}
+            {days.map((day, index) => {
+              const isFutureDate = day.date > new Date();
+              const isDisabled = isFutureDate;
+              
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleDateClick(day.date)}
+                  disabled={isDisabled}
+                  className={`
+                    aspect-square flex items-center justify-center text-sm rounded-lg transition-colors
+                    ${isDisabled 
+                      ? 'text-gray-400 cursor-not-allowed opacity-50' 
+                      : day.isCurrentMonth 
+                        ? 'text-white hover:bg-gray-700' 
+                        : 'text-gray-500'
+                    }
+                    ${isToday(day.date) 
+                      ? 'bg-gray-600 font-semibold' 
+                      : ''
+                    }
+                    ${selectedDate && day.date.toDateString() === selectedDate.toDateString()
+                      ? 'bg-green-600 text-white'
+                      : ''
+                    }
+                  `}
+                >
+                  {day.day}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -198,10 +214,10 @@ export const MyReflections = () => {
           </div>
 
           <button
-            onClick={handleGoToChat}
+            onClick={handleStartJournaling}
             className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 p-4 w-full flex items-center justify-center gap-2 hover:bg-white/15 transition-colors"
           >
-            <span className="text-white text-sm">go to chat</span>
+            <span className="text-white text-sm">start journaling</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/70">
               <path d="M9 18l6-6-6-6"/>
             </svg>
