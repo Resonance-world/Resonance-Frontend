@@ -114,7 +114,7 @@ export function InteractiveOnboarding({ session }: ChatbotOnboardingProps) {
     },
     {
       id: 'completion',
-      content: "Thanks for sharing—you've just created your resonance card. ✨\n\nReady to mint your welcome token and enter the experience?",
+      content: "You've just created your resonance card. ✨\n\nReady to enter the experience?",
       questionType: 'completion' as const,
       dataKey: null,
       isBotMessage: true
