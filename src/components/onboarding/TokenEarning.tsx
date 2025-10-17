@@ -122,6 +122,8 @@ export const TokenEarning = () => {
       }
 
       setStep('success');
+      setResTokenBalance(data.reward?.amount || 10);
+      refreshUser(); // Refresh user data
     } catch (err: any) {
       setError(err.message || 'Failed to verify code. Please try again.');
     } finally {
@@ -315,12 +317,20 @@ export const TokenEarning = () => {
               <p>Use them to unlock features and rewards!</p>
             </div>
 
-            <button
-              onClick={handleContinue}
-              className="w-full bg-green-400 hover:bg-green-500 text-black font-semibold px-8 py-4 rounded-lg transition-colors"
-            >
-              Enter RESONANCE
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push('/garden/wallet')}
+                className="w-full bg-green-400 hover:bg-green-500 text-black font-semibold px-8 py-4 rounded-lg transition-colors"
+              >
+                View Wallet
+              </button>
+              <button
+                onClick={handleContinue}
+                className="w-full text-white/60 hover:text-white text-sm transition-colors"
+              >
+                Continue to Living Room
+              </button>
+            </div>
           </div>
         )}
       </div>
