@@ -194,12 +194,11 @@ export const TokenEarning = () => {
               {/* Header */}
               <div className="mb-6">
                 <h1 className="text-white text-2xl font-bold mb-2">Earn RES Tokens</h1>
-                <p className="text-white/60 text-sm">Welcome reward</p>
               </div>
 
               {/* Description */}
               <p className="text-white/70 text-sm leading-relaxed mb-6">
-                Verify your email and receive <span className="text-green-400 font-semibold">10 RES tokens</span> as a welcome reward to get started.
+                Verify your email and start earning RES tokens.
               </p>
 
               {/* Features */}
@@ -210,7 +209,7 @@ export const TokenEarning = () => {
                 </div>
                 <div className="bg-white/5 rounded-lg p-4 text-left">
                   <p className="text-white font-medium text-sm mb-1">10 RES Tokens</p>
-                  <p className="text-white/50 text-xs">Instant reward</p>
+                  <p className="text-white/50 text-xs">Reward</p>
                 </div>
               </div>
 
