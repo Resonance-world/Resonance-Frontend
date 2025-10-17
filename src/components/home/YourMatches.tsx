@@ -163,53 +163,73 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
     
     if (match.status === 'PENDING') {
       return (
-        <div key={match.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 mb-3">
-          <div className="mb-3">
-            <p className="text-sm font-medium text-white mb-1">&ldquo;{match.question}&rdquo;</p>
-            <p className="text-xs text-gray-400">{match.category}</p>
-            <p className="text-xs text-gray-500">with {match.user}</p>
-          </div>
-          
-          <div className="mb-3">
-            <MatchStatusIndicator 
-              status={match.status}
-              userAccepted={match.userAccepted}
-              otherUserAccepted={match.otherUserAccepted}
-            />
-          </div>
-          
-          {!match.userAccepted && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleAcceptMatch(match.id)}
-                disabled={isAccepting}
-                className="flex-1 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white py-2 px-3 rounded-md transition-colors flex items-center justify-center"
-                title="Accept match"
-              >
-                {isAccepting ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 6L9 17l-5-5"/>
-                  </svg>
-                )}
-              </button>
-              <button
-                onClick={() => handleDeclineMatch(match.id)}
-                disabled={isDeclining}
-                className="flex-1 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white py-2 px-3 rounded-md transition-colors flex items-center justify-center"
-                title="Decline match"
-              >
-                {isDeclining ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 6L6 18M6 6l12 12"/>
-                  </svg>
-                )}
-              </button>
+        <div key={match.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 mb-3">
+          <div className="flex items-center space-x-4">
+            {/* Profile Picture */}
+            <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+              {match.userProfile?.profilePictureUrl ? (
+                <img 
+                  src={match.userProfile.profilePictureUrl} 
+                  alt={match.user} 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <span className="text-gray-300 text-lg font-medium">
+                  {match.user.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
-          )}
+            
+            {/* Match Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-white font-medium text-base">{match.user}</h3>
+                {!match.userAccepted && (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleAcceptMatch(match.id)}
+                      disabled={isAccepting}
+                      className="w-8 h-8 bg-green-500/80 hover:bg-green-500 disabled:bg-green-500/50 text-white rounded-full transition-colors flex items-center justify-center"
+                      title="Accept to start chat"
+                    >
+                      {isAccepting ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleDeclineMatch(match.id)}
+                      disabled={isDeclining}
+                      className="w-8 h-8 bg-red-500/80 hover:bg-red-500 disabled:bg-red-500/50 text-white rounded-full transition-colors flex items-center justify-center"
+                      title="Decline match"
+                    >
+                      {isDeclining ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              <p className="text-gray-300 text-sm mb-1">&ldquo;{match.question}&rdquo;</p>
+              <p className="text-gray-400 text-xs">{match.category}</p>
+              
+              <div className="mt-2">
+                <MatchStatusIndicator 
+                  status={match.status}
+                  userAccepted={match.userAccepted}
+                  otherUserAccepted={match.otherUserAccepted}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       );
     }
@@ -273,7 +293,7 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-      <div className="text-white text-lg font-medium mb-3">YOUR MATCHES</div>
+      <div className="text-white text-lg font-medium mb-3">You may resonate with</div>
       <div className="text-gray-300 text-sm mb-4">
         5 matches a day. Show up with curiosity and feel the magic unfold.
       </div>
