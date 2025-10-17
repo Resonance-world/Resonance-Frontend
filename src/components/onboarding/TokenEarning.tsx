@@ -63,6 +63,11 @@ export const TokenEarning = () => {
     setError('');
 
     try {
+      if (!session?.user?.id) {
+        setError('Please log in to verify your email');
+        return;
+      }
+
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
       const response = await fetch(`${backendUrl}/api/email-verification/send-code`, {
         method: 'POST',
@@ -71,7 +76,10 @@ export const TokenEarning = () => {
           'ngrok-skip-browser-warning': 'true'
         },
         credentials: 'include',
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ 
+          email,
+          userId: session.user.id 
+        })
       });
 
       const data = await response.json();
@@ -104,6 +112,11 @@ export const TokenEarning = () => {
     setError('');
 
     try {
+      if (!session?.user?.id) {
+        setError('Please log in to verify your email');
+        return;
+      }
+
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5050';
       const response = await fetch(`${backendUrl}/api/email-verification/verify-code`, {
         method: 'POST',
@@ -112,7 +125,10 @@ export const TokenEarning = () => {
           'ngrok-skip-browser-warning': 'true'
         },
         credentials: 'include',
-        body: JSON.stringify({ code: verificationCode })
+        body: JSON.stringify({ 
+          code: verificationCode,
+          userId: session.user.id 
+        })
       });
 
       const data = await response.json();
