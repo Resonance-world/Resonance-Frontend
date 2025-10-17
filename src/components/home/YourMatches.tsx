@@ -136,27 +136,45 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
   const renderMatchCard = (match: UserMatch) => {
     if (match.status === 'CONFIRMED') {
       return (
-        <div key={match.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-green-400/30 mb-3">
-          <div className="mb-3">
-            <p className="text-sm font-medium text-white mb-1">&ldquo;{match.question}&rdquo;</p>
-            <p className="text-xs text-gray-400">{match.category}</p>
-            <p className="text-xs text-gray-500">with {match.user}</p>
+        <div key={match.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-green-400/30 mb-3">
+          <div className="flex items-center space-x-4">
+            {/* Profile Picture */}
+            <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+              {match.userProfile?.profilePictureUrl ? (
+                <img 
+                  src={match.userProfile.profilePictureUrl} 
+                  alt={match.user} 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <span className="text-gray-300 text-lg font-medium">
+                  {match.user.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+            
+            {/* Match Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-white font-medium text-base">{match.user}</h3>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded-full">
+                    CONFIRMED
+                  </span>
+                </div>
+              </div>
+              
+              <p className="text-gray-400 text-xs mb-1">{match.category}</p>
+              <p className="text-gray-300 text-sm mb-2">&ldquo;{match.question}&rdquo;</p>
+              
+              <button
+                onClick={() => handleGoToCircles(match.relationshipId!)}
+                className="bg-emerald-500/60 hover:bg-emerald-500/80 text-white text-sm py-2 px-4 rounded-lg transition-colors font-medium"
+              >
+                Start Chat
+              </button>
+            </div>
           </div>
-          
-          <div className="mb-3">
-            <MatchStatusIndicator 
-              status={match.status}
-              userAccepted={match.userAccepted}
-              otherUserAccepted={match.otherUserAccepted}
-            />
-          </div>
-          
-          <button
-            onClick={() => handleGoToCircles(match.relationshipId!)}
-            className="w-full bg-green-600 hover:bg-green-700 text-white text-sm py-2 px-3 rounded-md transition-colors font-medium"
-          >
-            Go to Circles to Start Chat
-          </button>
         </div>
       );
     }
@@ -189,13 +207,13 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
                     <button
                       onClick={() => handleAcceptMatch(match.id)}
                       disabled={isAccepting}
-                      className="w-8 h-8 bg-green-500/80 hover:bg-green-500 disabled:bg-green-500/50 text-white rounded-full transition-colors flex items-center justify-center"
+                      className="w-10 h-10 bg-emerald-500/60 hover:bg-emerald-500/80 disabled:bg-emerald-500/30 text-white rounded-full transition-colors flex items-center justify-center"
                       title="Accept to start chat"
                     >
                       {isAccepting ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M20 6L9 17l-5-5"/>
                         </svg>
                       )}
@@ -203,13 +221,13 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
                     <button
                       onClick={() => handleDeclineMatch(match.id)}
                       disabled={isDeclining}
-                      className="w-8 h-8 bg-red-500/80 hover:bg-red-500 disabled:bg-red-500/50 text-white rounded-full transition-colors flex items-center justify-center"
+                      className="w-10 h-10 bg-slate-500/60 hover:bg-slate-500/80 disabled:bg-slate-500/30 text-white rounded-full transition-colors flex items-center justify-center"
                       title="Decline match"
                     >
                       {isDeclining ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M18 6L6 18M6 6l12 12"/>
                         </svg>
                       )}
@@ -218,8 +236,8 @@ export const YourMatches = ({ matches, hasMatchedToday, currentPrompt }: YourMat
                 )}
               </div>
               
-              <p className="text-gray-300 text-sm mb-1">&ldquo;{match.question}&rdquo;</p>
-              <p className="text-gray-400 text-xs">{match.category}</p>
+              <p className="text-gray-400 text-xs mb-1">{match.category}</p>
+              <p className="text-gray-300 text-sm">&ldquo;{match.question}&rdquo;</p>
               
               <div className="mt-2">
                 <MatchStatusIndicator 
