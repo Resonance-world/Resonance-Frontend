@@ -84,3 +84,4 @@ export const SimpleErrorFallback = ({ error, resetError }: { error?: Error; rese
     </div>
   </div>
 );
+

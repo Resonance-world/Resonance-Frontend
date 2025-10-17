@@ -8,25 +8,43 @@ export default function Home() {
       {/* Optimized Garden Background Image */}
       <OptimizedBackground 
         imageSrc="/garden_background.png"
-        filter="brightness(0.4) sepia(0.2) saturate(1.2)"
+        filter="brightness(0.3) sepia(0.2) saturate(1.2)"
         priority={true}
       />
       
-      {/* Logo/Brand */}
-      <div className="relative z-10 text-center mb-16">
-        <div className="flex justify-center mb-8">
-          <div className="scale-150">
-            <ResonanceLogo size="lg" showText={false} />
+      {/* Glass Effect Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/30 backdrop-blur-[1px]"></div>
+      
+      {/* Main Content Container with Glass Effect */}
+      <div className="relative z-10 w-full max-w-lg">
+        {/* Logo/Brand Section with Glass Card */}
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 mb-8 shadow-2xl">
+          <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <div className="scale-150">
+                <ResonanceLogo size="lg" showText={false} />
+              </div>
+            </div>
+            <h1 className="text-2xl font-light text-white mb-3 tracking-wide">
+              Welcome to Resonance
+            </h1>
+            <p className="text-lg text-amber-100/90 leading-relaxed">
+              Connect through meaningful conversation you actually want to have
+            </p>
           </div>
         </div>
-        <p className="text-xl text-amber-100 max-w-lg mx-auto leading-relaxed drop-shadow-md">
-          Connect through meaningful conversation you actually want to have
-        </p>
-      </div>
-      
-      {/* Main Sign In Action */}
-      <div className="relative z-10 w-full max-w-md">
-        <AuthButton />
+        
+        {/* Sign In Section with Glass Card */}
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-2xl">
+          <AuthButton />
+        </div>
+        
+        {/* Subtle Footer */}
+        <div className="text-center mt-8">
+          <p className="text-sm text-white/60">
+            Powered by World ID
+          </p>
+        </div>
       </div>
     </div>
   );
