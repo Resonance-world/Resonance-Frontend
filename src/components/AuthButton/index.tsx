@@ -63,9 +63,9 @@ export const AuthButton = () => {
         <Button
           onClick={onClick}
           disabled={isPending}
-          size="lg"
+          size="md"
           variant="primary"
-          className="w-full py-4 text-lg font-medium bg-gradient-to-r from-amber-600/80 to-amber-700/80 hover:from-amber-500/90 hover:to-amber-600/90 backdrop-blur-sm border border-amber-400/40 hover:border-amber-300/60 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] rounded-2xl"
+          className="w-full py-3 text-base font-medium bg-gradient-to-r from-amber-800/90 to-amber-900/90 hover:from-amber-700/95 hover:to-amber-800/95 backdrop-blur-sm border border-amber-600/50 hover:border-amber-500/70 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01] rounded-xl"
         >
           {isPending ? (
             <span className="flex items-center justify-center">

@@ -25,17 +25,14 @@ export default function Home() {
                 <ResonanceLogo size="lg" showText={false} />
               </div>
             </div>
-            <h1 className="text-2xl font-light text-white mb-3 tracking-wide">
-              Welcome to Resonance
-            </h1>
             <p className="text-lg text-amber-100/90 leading-relaxed">
               Connect through meaningful conversation you actually want to have
             </p>
           </div>
         </div>
         
-        {/* Sign In Section with Glass Card */}
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-2xl">
+        {/* Sign In Section */}
+        <div className="w-full max-w-sm">
           <AuthButton />
         </div>
         
