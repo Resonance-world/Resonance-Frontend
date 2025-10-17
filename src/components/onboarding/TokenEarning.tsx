@@ -190,16 +190,11 @@ export const TokenEarning = () => {
         {step === 'intro' && (
           <div className="w-full max-w-md space-y-6">
             {/* Main Card */}
-            <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-2xl p-8 border border-white/10 shadow-2xl text-center">
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center">
               {/* Header */}
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-2xl">🎁</span>
-                </div>
-                <div>
-                  <h1 className="text-white text-2xl font-bold">Earn RES Tokens</h1>
-                  <p className="text-white/60 text-sm">Welcome reward</p>
-                </div>
+              <div className="mb-6">
+                <h1 className="text-white text-2xl font-bold mb-2">Earn RES Tokens</h1>
+                <p className="text-white/60 text-sm">Welcome reward</p>
               </div>
 
               {/* Description */}
@@ -209,23 +204,13 @@ export const TokenEarning = () => {
 
               {/* Features */}
               <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 bg-black/20 rounded-lg p-3">
-                  <div className="w-8 h-8 bg-green-400/20 rounded-full flex items-center justify-center">
-                    <span className="text-green-400 text-sm">✓</span>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-medium text-sm">Email Verification</p>
-                    <p className="text-white/50 text-xs">Quick and secure</p>
-                  </div>
+                <div className="bg-white/5 rounded-lg p-4 text-left">
+                  <p className="text-white font-medium text-sm mb-1">Email Verification</p>
+                  <p className="text-white/50 text-xs">Quick and secure</p>
                 </div>
-                <div className="flex items-center gap-3 bg-black/20 rounded-lg p-3">
-                  <div className="w-8 h-8 bg-green-400/20 rounded-full flex items-center justify-center">
-                    <span className="text-green-400 text-sm">💰</span>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-medium text-sm">10 RES Tokens</p>
-                    <p className="text-white/50 text-xs">Instant reward</p>
-                  </div>
+                <div className="bg-white/5 rounded-lg p-4 text-left">
+                  <p className="text-white font-medium text-sm mb-1">10 RES Tokens</p>
+                  <p className="text-white/50 text-xs">Instant reward</p>
                 </div>
               </div>
 
@@ -251,19 +236,11 @@ export const TokenEarning = () => {
         {/* Email Input Step */}
         {step === 'input' && (
           <div className="w-full max-w-md space-y-6">
-            <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-2xl p-8 border border-white/10 shadow-2xl">
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10">
               {/* Header */}
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-white text-xl font-bold">Enter Your Email</h2>
-                  <p className="text-white/60 text-sm">We'll send you a verification code</p>
-                </div>
+              <div className="mb-6 text-center">
+                <h2 className="text-white text-xl font-bold mb-2">Enter Your Email</h2>
+                <p className="text-white/60 text-sm">We'll send you a verification code</p>
               </div>
 
               <div className="space-y-4">
@@ -308,22 +285,11 @@ export const TokenEarning = () => {
         {/* Verification Code Step */}
         {step === 'verify' && (
           <div className="w-full max-w-md space-y-6">
-            <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-2xl p-8 border border-white/10 shadow-2xl">
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10">
               {/* Header */}
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
-                    <path d="M9 12l2 2 4-4"/>
-                    <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
-                    <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
-                    <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/>
-                    <path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"/>
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-white text-xl font-bold">Enter Verification Code</h2>
-                  <p className="text-white/60 text-sm">Check your email for the 6-digit code</p>
-                </div>
+              <div className="mb-6 text-center">
+                <h2 className="text-white text-xl font-bold mb-2">Enter Verification Code</h2>
+                <p className="text-white/60 text-sm">Check your email for the 6-digit code</p>
               </div>
 
               {timeLeft > 0 && (
@@ -382,16 +348,11 @@ export const TokenEarning = () => {
         {/* Success Step */}
         {step === 'success' && (
           <div className="w-full max-w-md space-y-6">
-            <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-2xl p-8 border border-white/10 shadow-2xl text-center">
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center">
               {/* Header */}
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center animate-bounce">
-                  <span className="text-white text-2xl">🎉</span>
-                </div>
-                <div>
-                  <h2 className="text-white text-2xl font-bold">Email Verified!</h2>
-                  <p className="text-white/60 text-sm">Welcome to Resonance</p>
-                </div>
+              <div className="mb-6">
+                <h2 className="text-white text-2xl font-bold mb-2">Email Verified!</h2>
+                <p className="text-white/60 text-sm">Welcome to Resonance</p>
               </div>
 
               {/* Reward Card */}

@@ -232,20 +232,12 @@ export const WalletPage = () => {
       {/* Content */}
       <div className="relative z-10 p-4">
         {/* Wallet Card */}
-        <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/10 shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 mb-6 border border-white/10">
           {/* Wallet Header */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                  <line x1="1" y1="10" x2="23" y2="10"/>
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-white font-semibold">Resonance Wallet</h2>
-                <p className="text-white/60 text-sm">World Chain</p>
-              </div>
+            <div>
+              <h2 className="text-white font-semibold text-lg">Resonance Wallet</h2>
+              <p className="text-white/60 text-sm">World Chain</p>
             </div>
             {isWorldApp && (
               <div className="flex items-center gap-2 bg-green-500/20 px-3 py-1 rounded-full">
@@ -282,14 +274,9 @@ export const WalletPage = () => {
         {/* Email Verification Section */}
         {showVerification && (
           <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 mb-6 border border-white/10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm">🎁</span>
-              </div>
-              <div>
-                <h3 className="text-white font-semibold">Earn 10 RES Tokens</h3>
-                <p className="text-white/60 text-sm">Verify your email to get started</p>
-              </div>
+            <div className="mb-4">
+              <h3 className="text-white font-semibold text-lg mb-1">Earn 10 RES Tokens</h3>
+              <p className="text-white/60 text-sm">Verify your email to get started</p>
             </div>
 
             {!message.includes('code sent') ? (
@@ -337,28 +324,14 @@ export const WalletPage = () => {
 
         {/* Transaction History */}
         <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14,2 14,8 20,8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10,9 9,9 8,9"/>
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold">Transaction History</h3>
-              <p className="text-white/60 text-sm">{transactions.length} transactions</p>
-            </div>
+          <div className="mb-6">
+            <h3 className="text-white font-semibold text-lg mb-1">Transaction History</h3>
+            <p className="text-white/60 text-sm">{transactions.length} transactions</p>
           </div>
 
           {transactions.length === 0 ? (
             <div className="text-center py-8">
-              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">📝</span>
-              </div>
-              <p className="text-white/70 font-medium">No transactions yet</p>
+              <p className="text-white/70 font-medium mb-2">No transactions yet</p>
               <p className="text-white/50 text-sm">Your transaction history will appear here</p>
             </div>
           ) : (
@@ -369,14 +342,9 @@ export const WalletPage = () => {
                   className="bg-black/20 border border-white/10 rounded-lg p-4 hover:bg-black/30 transition-colors"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-                        <span className="text-lg">{getTransactionIcon(tx.type)}</span>
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">{tx.description || tx.type.replace('_', ' ')}</p>
-                        <p className="text-white/60 text-sm">{formatDate(tx.createdAt)}</p>
-                      </div>
+                    <div>
+                      <p className="text-white font-medium">{tx.description || tx.type.replace('_', ' ')}</p>
+                      <p className="text-white/60 text-sm">{formatDate(tx.createdAt)}</p>
                     </div>
                     <div className="text-right">
                       <p className={`font-bold ${parseFloat(tx.amount) > 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -409,12 +377,7 @@ export const WalletPage = () => {
 
         {/* World Wallet Info */}
         <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center">
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm">🌍</span>
-            </div>
-            <h4 className="text-white font-semibold">Powered by World Chain</h4>
-          </div>
+          <h4 className="text-white font-semibold mb-3">Powered by World Chain</h4>
           <p className="text-sm text-white/60">
             Your RES tokens are stored on World Chain Sepolia (testnet).
             <br />
