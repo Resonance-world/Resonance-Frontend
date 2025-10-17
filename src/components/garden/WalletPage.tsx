@@ -375,15 +375,6 @@ export const WalletPage = () => {
           )}
         </div>
 
-        {/* World Wallet Info */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center">
-          <h4 className="text-white font-semibold mb-3">Powered by World Chain</h4>
-          <p className="text-sm text-white/60">
-            Your RES tokens are stored on World Chain Sepolia (testnet).
-            <br />
-            All transactions are secured by blockchain technology.
-          </p>
-        </div>
       </div>
     </div>
   );
