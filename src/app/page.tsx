@@ -32,7 +32,7 @@ export default function Home() {
         </div>
         
         {/* Sign In Section */}
-        <div className="w-full max-w-sm">
+        <div className="w-full flex justify-center">
           <AuthButton />
         </div>
         
