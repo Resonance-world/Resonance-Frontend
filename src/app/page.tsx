@@ -18,22 +18,22 @@ export default function Home() {
       {/* Main Content Container with Glass Effect */}
       <div className="relative z-10 w-full max-w-lg">
         {/* Logo/Brand Section with Glass Card */}
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 mb-8 shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl">
           <div className="text-center">
             <div className="flex justify-center mb-6">
               <div className="scale-150">
                 <ResonanceLogo size="lg" showText={false} />
               </div>
             </div>
-            <p className="text-lg text-amber-100/90 leading-relaxed">
+            <p className="text-lg text-amber-100/90 leading-relaxed mb-8">
               Connect through meaningful conversation you actually want to have
             </p>
+            
+            {/* Sign In Button */}
+            <div className="flex justify-center">
+              <AuthButton />
+            </div>
           </div>
-        </div>
-        
-        {/* Sign In Section */}
-        <div className="w-full flex justify-center">
-          <AuthButton />
         </div>
         
         {/* Subtle Footer */}
