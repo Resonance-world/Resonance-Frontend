@@ -51,10 +51,14 @@ export const WalletPage = () => {
       const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${session?.user?.id}`);
       if (userResponse.ok) {
         const userData = await userResponse.json();
-        setBalance(parseFloat(userData.resTokenBalance || '0'));
+        console.log('📊 User data received:', userData); // Debug log
+        
+        // Extract user data from nested structure
+        const user = userData.user || userData;
+        setBalance(parseFloat(user.resTokenBalance || '0'));
         
         // Check if email is not verified yet
-        if (!userData.emailVerified) {
+        if (!user.emailVerified) {
           setShowVerification(true);
         }
       }
@@ -89,7 +93,10 @@ export const WalletPage = () => {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ 
+          email,
+          userId: session?.user?.id 
+        }),
       });
 
       const data = await response.json();
@@ -122,7 +129,11 @@ export const WalletPage = () => {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ code: verificationCode }),
+        body: JSON.stringify({ 
+          code: verificationCode,
+          email: email,
+          userId: session?.user?.id 
+        }),
       });
 
       const data = await response.json();
