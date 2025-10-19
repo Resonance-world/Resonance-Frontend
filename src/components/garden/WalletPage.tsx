@@ -48,7 +48,7 @@ export const WalletPage = () => {
       setLoading(true);
       
       // Fetch user balance
-      const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${session?.user?.id}`);
+      const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${session?.user?.id}`);
       if (userResponse.ok) {
         const userData = await userResponse.json();
         console.log('📊 User data received:', userData); // Debug log
@@ -64,7 +64,7 @@ export const WalletPage = () => {
       }
 
       // Fetch transaction history
-      const txResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${session?.user?.id}/transactions`);
+      const txResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${session?.user?.id}/transactions`);
       if (txResponse.ok) {
         const txData = await txResponse.json();
         setTransactions(txData.transactions || []);
