@@ -18,6 +18,7 @@ export const PublicGarden = ({ userId }: PublicGardenProps) => {
   const router = useRouter();
   const [profile, setProfile] = useState<GardenProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
   
   console.log('🌻 Public Garden loading for user:', userId);
 
@@ -58,6 +59,10 @@ export const PublicGarden = ({ userId }: PublicGardenProps) => {
             }
           };
           setProfile(userProfile);
+          // Capture email verification status if provided by backend
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const verified = (userData as any)?.emailVerified ?? null;
+          setEmailVerified(verified);
         } else {
           console.error('❌ User not found');
         }
@@ -119,7 +124,20 @@ export const PublicGarden = ({ userId }: PublicGardenProps) => {
           </div>
           
           <div>
-            <h2 className="text-white text-xl font-medium">{profile.name}</h2>
+            <div className="flex items-center justify-center gap-2">
+              <h2 className="text-white text-xl font-medium">{profile.name}</h2>
+              {emailVerified !== null && (
+                emailVerified ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30">
+                    Email verified
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-200 border border-yellow-500/20">
+                    Email not verified
+                  </span>
+                )
+              )}
+            </div>
             {profile.worldId && (
               <p className="text-white/60 text-sm">{profile.worldId}</p>
             )}
