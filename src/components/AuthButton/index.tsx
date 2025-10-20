@@ -65,7 +65,7 @@ export const AuthButton = () => {
           disabled={isPending}
           size="md"
           variant="primary"
-          className="w-auto px-8 py-3 text-base font-medium bg-amber-800/20 hover:bg-amber-800/30 backdrop-blur-md border border-amber-600/40 hover:border-amber-500/60 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01] rounded-xl"
+          className="w-full max-w-xs mx-auto px-8 py-3 text-base font-medium bg-amber-800/20 hover:bg-amber-800/30 backdrop-blur-md border border-amber-600/40 hover:border-amber-500/60 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01] rounded-xl"
         >
           {isPending ? (
             <span className="flex items-center justify-center">

@@ -30,7 +30,7 @@ export default function Home() {
             </p>
             
             {/* Sign In Button */}
-            <div className="flex justify-center">
+            <div className="flex justify-center items-center">
               <AuthButton />
             </div>
           </div>
